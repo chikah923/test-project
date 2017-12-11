@@ -27,7 +27,7 @@
          @forelse ($posts as $post)
           <li>{{ $post->name }} [{{ $post->created_at }}]
             <a href="{{ action('PostsController@destroy', $post) }}" class="del">[x]</a>
-            <a href="{{ action('PostsController@edit', $post) }} " class="edit">[edit]</a>
+            <a href="/posts/{{ $post->id }}" class="edit">[edit]</a>
           </li>
           <li>{!! nl2br(e($post->body)) !!}</li>
           <hr>

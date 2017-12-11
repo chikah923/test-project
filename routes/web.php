@@ -14,5 +14,5 @@
 Route::get('/', 'PostsController@index');
 Route::post('/posts', 'PostsController@store');
 Route::get('/posts/del/{post}', 'PostsController@destroy');
-Route::get('/posts/{post}', 'PostsController@edit');
-Route::post('/posts/update/{post}', 'PostsController@update');
+Route::get('/posts/{id}', 'PostsController@edit');
+Route::post('/posts/update/{id}', 'PostsController@update');

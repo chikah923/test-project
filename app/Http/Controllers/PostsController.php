@@ -3,55 +3,49 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Model\Post;
+use App\Http\Requests\PostRequest;
+use App\Model\Post as PostModel;
 
 class PostsController extends Controller
 {
-    public function index() {
-      $posts = Post::latest()->get();
-      //dd($posts->toArray());
-      return view ('posts.index')->with('posts', $posts);
-    }
-   
-   public function store(Request $request) {
-      $this->validate($request, [
-         'body' => 'required|min:3',
-      ]);
+   private $post_model;
 
-      $post = new Post();
-      
-      if (empty($post->name)) {
-      $post->name = "名無しさん";
-      } else {
-      $post->name = $request->name;
-      }
-      $post->body = $request->body;
-      $post->save();
+   public function __construct(PostModel $post_model)
+   {
+     $this->post_model = $post_model;
+   }
+
+
+   public function index() 
+   {
+      $posts = $this->post_model->getAllPost();
+      return view ('posts.index')->with('posts', $posts);
+   }
+   
+
+   public function store(PostRequest $request)
+   {
+      $input = $request->all();
+      $this->post_model->createPost($input);
       return redirect('/');
    }
 
-   public function destroy(Post $post) {
-      $post->delete();
+
+   public function destroy($id)
+   {
+      $this->post_model->deletePost($id);
       return redirect('/');
    }
  
-   public function edit(Post $post) {
+
+   public function edit($id) {
+      $post = $this->post_model->getPostFromId($id);
       return view('posts.edit')->with('post', $post);
    }
 
-   public function update(Request $request, Post $post) {
-      $this->validate($request, [
-         'body' => 'required|min:3',
-      ]);
-    
-      if (empty($post->name)) {
-      $post->name = "名無しさん";
-      } else {
-      $post->name = $request->name;
-      }
-
-      $post->body = $request->body;
-      $post->save();
+   public function update(PostRequest $request, int $id)
+   {
+      $this->post_model->updatePost($request, $id);
       return redirect('/');
    }
 
