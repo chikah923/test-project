@@ -13,6 +13,6 @@
 
 Route::get('/', 'PostsController@index');
 Route::post('/posts', 'PostsController@store');
-Route::get('/posts/del/{post}', 'PostsController@destroy');
+Route::get('/posts/del/{id}', 'PostsController@destroy');
 Route::get('/posts/{id}', 'PostsController@edit');
 Route::post('/posts/update/{id}', 'PostsController@update');

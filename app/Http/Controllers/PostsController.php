@@ -45,7 +45,9 @@ class PostsController extends Controller
 
    public function update(PostRequest $request, int $id)
    {
-      $this->post_model->updatePost($request, $id);
+      $input = $request->all();
+      //dd($input); $requestの中からtable更新に必要な$inputを取得出来てるか確認
+      $this->post_model->updatePost($input, $id);
       return redirect('/');
    }
 

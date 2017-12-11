@@ -21,22 +21,24 @@ class Post extends Model
       return $this->create($input);
     }
 
+
     public function deletePost($id)
     {
       return $this->find($id)
                   ->delete();   
     }
 
-    public function updatePost($request, $id)
-    {
-      return $this->find($id)
-                   ->update($request);
-    }
-
 
     public function getPostFromId($id)
     {
-       return $this->find($id);
+      return $this->find($id);   
+    }
+
+
+    public function updatePost($input, $id)
+    {
+     return $this->find($id)
+                   ->update($input);     
     }
     
 
