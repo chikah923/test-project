@@ -15,8 +15,9 @@
       <ul>
          @forelse ($post->comments as $comment)
           <li>
-          {{ $comment->body }}
-          
+          {{ $comment->body }} 
+          <a href="{{ action('CommentsController@destroy', $comment) }}" class="del">[x]</a>
+          {{ (var_dump($comment)) }}
           </li>
           <hr>
           @empty
@@ -25,10 +26,12 @@
       </ul>
 
 
-     <form action = "{{ url('/posts/coments') }}" method ="post">
+     <form action = "{{ action('CommentsController@store', $post) }}" method ="post">
        {{ csrf_field() }}
 
         <p>
+        <input type="hidden" name="post_id" placeholder="number" value= "{{ $post->id }}">
+      
         <input type="text" name="body" placeholder="Comment" value= "{{ old('body') }}">
         @if ($errors->has('body'))
         <span class="error">{{ $errors->first('body') }}</span>
