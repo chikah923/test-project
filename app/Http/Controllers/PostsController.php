@@ -51,4 +51,12 @@ class PostsController extends Controller
       return redirect('/');
    }
 
+
+   public function show($id)
+   {
+      $post = $this->post_model->showPost($id);
+      return view('posts.show')->with('post', $post);
+   }
+
+
 }

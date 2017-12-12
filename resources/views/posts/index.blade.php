@@ -28,6 +28,7 @@
           <li>{{ $post->name }} [{{ $post->created_at }}]
             <a href="/posts/del/{{ $post->id }}" class="del">[x]</a>
             <a href="/posts/{{ $post->id }}" class="edit">[edit]</a>
+            <a href="/posts/show/{{ $post->id }}" class="edit">※</a>
           </li>
           <li>{!! nl2br(e($post->body)) !!}</li>
           <hr>

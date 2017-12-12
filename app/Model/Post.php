@@ -4,9 +4,16 @@ namespace App\Model;
 
 use Illuminate\Database\Eloquent\Model;
 
+
 class Post extends Model
 {
     protected $fillable = ['name', 'body'];
+    
+    public function comments()
+    {
+      return $this->hasMany('App\Model\Comment');
+    }
+
 
 
     public function getAllPost() 
@@ -37,9 +44,14 @@ class Post extends Model
 
     public function updatePost($input, $id)
     {
-     return $this->find($id)
+      return $this->find($id)
                    ->update($input);     
     }
     
+    
+    public function showPost($id)
+    {
+      return $this->find($id);
+    }
 
 }
