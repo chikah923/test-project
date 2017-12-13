@@ -4,7 +4,7 @@
 
 @section('content')
     <h1>Ladies Forum
-    <a href= "{{ url('/') }}" class= "header-menu">Back</a>
+    <a href= "/" class= "header-menu">Back</a>
     </h1>
     
     <p> {{ $post->name }} [{{ $post->created_at }}]</p>
@@ -16,8 +16,9 @@
          @forelse ($post->comments as $comment)
           <li>
           {{ $comment->body }} 
-          <a href="{{ action('CommentsController@destroy', $comment) }}" class="del">[x]</a>
-          {{ (var_dump($comment)) }}
+          <a href="/posts/comments/{{ $comment->id }}" class="del">[x]</a>
+ 
+
           </li>
           <hr>
           @empty
@@ -26,8 +27,8 @@
       </ul>
 
 
-     <form action = "{{ action('CommentsController@store', $post) }}" method ="post">
-       {{ csrf_field() }}
+     <form action = "/posts/{{ $post->id }}/comments" method ="post">
+        {{ csrf_field() }}
 
         <p>
         <input type="hidden" name="post_id" placeholder="number" value= "{{ $post->id }}">
