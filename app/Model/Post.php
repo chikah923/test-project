@@ -26,7 +26,7 @@ class Post extends Model
     public function getAllPost()
     {
         return $this->orderBy('created_at', 'desc')
-                  ->get();
+                    ->get();
     }
 
     /** postの新規保存
@@ -49,7 +49,7 @@ class Post extends Model
     public function deletePost($id)
     {
         return $this->find($id)
-                  ->delete();
+                    ->delete();
     }
 
     /** 該当するpostレコードの取得
@@ -70,10 +70,10 @@ class Post extends Model
     * @param  int $id
     * @return void
     */
-    public function updatePost($input, $id)
+    public function updatePost($input)
     {
-        return $this->find($id)
-                   ->update($input);
+        return $this->find($input['id'])
+                    ->update($input);
     }
 
     /** 該当するpostのレコードを取得

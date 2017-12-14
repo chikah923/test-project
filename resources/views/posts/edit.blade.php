@@ -12,6 +12,7 @@
 <form action="/posts/update/{{$post->id}}" method="post">
   {{ csrf_field() }}
   <p>
+    <input type="hidden" name="id" placeholder="number" value="{{ $post->id }}">
     <input name="name" placeholder="Your name" type="text" value="{{ old('name', $post->name) }}" />
   </p>
   <p>
