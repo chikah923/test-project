@@ -10,6 +10,13 @@
 <p> {{ $post->name }} [{{ $post->created_at }}]</p>
 <p>{!! nl2br(e($post->body)) !!}  </p>
 
+<p>
+   @if ($post->image!= NULL)
+  <img src="{{ asset('images/'. $post->image) }}" width="400" height="200">
+  @endif
+</p>
+
+
 <h2>＊Comments＊</h2>
 
 <ul>

@@ -32,13 +32,12 @@ class Comment extends Model
     /** 該当するcommentの削除
     *
     * @access public
-    * @param  int $comment
-    *         削除対象Commentのidを格納
+    * @param  int $id
     * @return void
     */
-    public function deleteComment($comment)
+    public function deleteComment($id)
     {
-        return $this->find($comment)
+        return $this->find($id)
                     ->delete();
     }
 }

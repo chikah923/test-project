@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Model\Post;
 use App\Model\Comment as CommentModel;
+use App\Http\Requests\CommentRequest;
 
 class CommentsController extends Controller
 {
@@ -25,33 +26,25 @@ class CommentsController extends Controller
     *
     * @access public
     * @param  String[] $request
-    *
-    * @param  int $id
-    *             commentに紐づくpostのidを格納
     * @return response
-    * @todo   routingを通るように書き換えが必要
     */
-    public function store(Request $request, $id)
+    public function store(CommentRequest $request)
     {
-        $this->validate($request, [
-        'body'=>'required'
-         ]);
         /* $requestからパラメータのみ取得し$inputに格納 */
         $input = $request->all();
         $this->comment_model->createComment($input);
-        return redirect()->action('PostsController@show', $id);
+        return redirect('posts/show/'.$input['post_id']);
     }
 
     /** 該当するcommentの削除
     *
     * @access public
-    * @param  int $comment
-    *             削除対象Commentのidを格納
+    * @param  int $id
     * @return response
     */
-    public function destroy($comment)
+    public function destroy($id)
     {
-        $this->comment_model->deleteComment($comment);
+        $this->comment_model->deleteComment($id);
         return redirect()->back();
     }
 

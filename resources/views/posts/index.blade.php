@@ -4,7 +4,7 @@
 
 @section('content')
 <h1>Ladies Forum</h1>
-<form action = "/posts"  method ="post">
+<form action = "/posts"  method ="post" enctype= "multipart/form-data">
   {{ csrf_field() }}
   <p>
     <input type="text" name="name" placeholder="Your name" value= "{{ old('title') }}">
@@ -15,6 +15,11 @@
     @if ($errors->has('body'))
     <span class="error">{{ $errors->first('body') }}</span>
     @endif
+  </p>
+
+  <p>
+    <label>Select image to Upload: </label>
+    <input type="file" name ="featured_image" id="featured_image">
   </p>
 
   <p>
@@ -31,9 +36,17 @@
     <a class="edit" href="/posts/show/{{ $post->id }}">※</a>
   </li>
   <li>{!! nl2br(e($post->body)) !!}</li>
+    @if ($post->image!= NULL)
+    <img src="{{ asset('images/'. $post->image) }}" width="400" height="200">
+    @endif
   <hr />
   @empty
   <li>No posts yet</li>
   @endforelse
 </ul>
+
+<div class="paginate">
+{{ $posts->links() }}
+</div>
+
 @endsection
