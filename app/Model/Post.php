@@ -3,10 +3,11 @@
 namespace App\Model;
 
 use Illuminate\Database\Eloquent\Model;
+use DB;
 
 class Post extends Model
 {
-    protected $fillable = ['name', 'body'];
+    protected $fillable = ['name', 'body', 'image'];
 
     /** commentsテーブルとpostsテーブルの紐付きを設定
     *
@@ -26,7 +27,7 @@ class Post extends Model
     public function getAllPost()
     {
         return $this->orderBy('created_at', 'desc')
-                  ->get();
+                    ->paginate(10);
     }
 
     /** postの新規保存
@@ -49,7 +50,19 @@ class Post extends Model
     public function deletePost($id)
     {
         return $this->find($id)
-                  ->delete();
+                    ->delete();
+    }
+
+    /** 該当するpostからimageのみNULLに更新
+    *
+    * @access public
+    * @param  int $id
+    * @return void
+    */
+    public function deleteImageFromPost($id)
+    {
+         DB::table('posts')->where('id', $id)
+                           ->update(['image' => NULL]);
     }
 
     /** 該当するpostレコードの取得
@@ -67,13 +80,13 @@ class Post extends Model
     *
     * @access public
     * @param  String[] $input
-    * @param  int $id
     * @return void
     */
-    public function updatePost($input, $id)
+    public function updatePost($input)
     {
-        return $this->find($id)
-                   ->update($input);
+  // dd($input);
+        return $this->find($input['id'])
+                    ->update($input);
     }
 
     /** 該当するpostのレコードを取得
