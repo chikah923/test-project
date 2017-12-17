@@ -19,6 +19,16 @@ class Post extends Model
         return $this->hasMany('App\Model\Comment');
     }
 
+    /** imagesテーブルとpostsテーブルの紐付きを設定
+    *
+    * @access public
+    * @return voild
+    */
+    public function images()
+    {
+        return $this->hasMany('App\Model\Image');
+    }
+
     /** postsテーブルのレコードを全件取得
     *
     * @access public

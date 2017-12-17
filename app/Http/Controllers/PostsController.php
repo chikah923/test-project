@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Requests\PostRequest;
 use App\Model\Post as PostModel;
+use App\Model\Image as ImageModel;
 use Image;
 use File;
 
 class PostsController extends Controller
 {
     private $post_model;
+    public  $image_model;
 
     /** Postモデルをインスタンス化する
     *
@@ -18,9 +20,10 @@ class PostsController extends Controller
     * @param obj $post_model
     * @return void
     */
-    public function __construct(PostModel $post_model)
+    public function __construct(PostModel $post_model, ImageModel $image_model)
     {
         $this->post_model = $post_model;
+        $this->image_model = $image_model;
     }
 
     /** 既存のpostsデータを全件取得する
@@ -31,7 +34,9 @@ class PostsController extends Controller
     public function index()
     {
         $posts = $this->post_model->getAllPost();
-        return view ('posts.index')->with('posts', $posts);
+        $images = $this->image_model->getAllImage();
+        return view ('posts.index')->with('posts', $posts)
+                                   ->with('images', $images);
     }
 
     /** postデータの新規保存
@@ -42,25 +47,27 @@ class PostsController extends Controller
     */
     public function store(PostRequest $request)
     {
-        /* RequestにFile uploadが含まれている場合、以下の処理をする */
-        if ($request->hasFile('featured_image')) {
-            $image = $request->file('featured_image');
-            // time stampを使ってFileをリネーム
-            $filename = time() . '.' . $image->getClientOriginalExtension();
-            // Fileの保存先を$loacationに格納
-            $location = public_path('images/'. $filename);
-            // Fileをリサイズして$locationに保存
-            Image::make($image)->resize(200, 100)->save($location);
-            // File名をpostsテーブルのカラムimageに保存
-            $post = new PostModel;
-            $post->image = $filename;
-            // 配列にimageを追加
-            $request['image'] = $filename;
-        }
         /* $requestからパラメータの配列のみ取得し$inputに格納 */
         $input = $request->all();
-        $this->post_model->createPost($input);
-        return redirect('/');
+        $post = $this->post_model->createPost($input);
+
+        /* RequestにFile uploadが含まれている場合、以下の処理をする */
+        if ($request->hasFile('featured_image')) {
+            $images = $request->file('featured_image');
+              //各Fileに対し以下の処理をする
+            foreach ($images as $file) {
+                // File名を取得
+                $filename = $file->getClientOriginalName();
+                // Fileの保存先を$loacationに格納
+                $location = public_path('images/'. $filename);
+                // Fileをリサイズして$locationに保存
+                Image::make($file)->resize(200, 100)->save($location);
+                $image = array('post_id' => $post->id, 'image' => $filename);
+                // imagesテーブルにFile名を保存する
+                $this->image_model->createImage($image);
+                }
+        }
+         return redirect('/');
     }
 
     /** 該当するpostデータの削除
@@ -73,28 +80,14 @@ class PostsController extends Controller
     {
         /* 該当するpostデータにFileが存在する場合、public/imagesディレクトリから画像を削除する */
         $post = $this->post_model->getPostFromId($id);
-        if ($post->image!= NULL) {
-            File::delete(public_path('images/'.$post->image));
+        $images = $post->images;
+        foreach ($images as $image)
+        {
+            File::delete(public_path('images/'.$image->image));
         }
         $this->post_model->deletePost($id);
         return redirect('/');
     }
-
-     /** 該当するpostからimageのみ削除
-     *
-     * @access public
-     * @param  int $id
-     * @return response
-     */
-     public function deleteImage($id)
-     {
-         // public/images フォルダにある画像を削除
-         $post = $this->post_model->getPostFromId($id);
-         File::delete(public_path('images/'.$post->image));
-         // 該当するpostからimageのみNULLに更新
-         $this->post_model->deleteImageFromPost($id);
-         return redirect('/');
-     }
 
     /** 該当するpostデータの編集画面に移動
     *
@@ -105,7 +98,9 @@ class PostsController extends Controller
     public function edit($id)
     {
         $post = $this->post_model->getPostFromId($id);
-        return view('posts.edit')->with('post', $post);
+        $images = $this->image_model->getAllImage();
+        return view('posts.edit')->with('post', $post)
+                                 ->with('images', $images);
     }
 
     /** 該当するpostデータの更新
@@ -118,24 +113,20 @@ class PostsController extends Controller
     {
         /* RequestにFile uploadが含まれている場合、以下の処理をする */
         if ($request->hasFile('featured_image')) {
-            $image = $request->file('featured_image');
-            // time stampを使ってFileをリネーム
-            $filename = time() . '.' . $image->getClientOriginalExtension();
-            // Fileの保存先を$loacationに格納
-            $location = public_path('images/'. $filename);
-            // Fileをリサイズして$locationに保存
-            Image::make($image)->resize(400, 200)->save($location);
-            // idから該当するpostレコードを取得する
-            $post = $this->post_model->getPostFromId($request['id']);
-            // 古いFile名を$oldFileNameに格納する
-            $oldFileName= $post->image;
-            // 新しいFile名をpostデータのimageカラムに格納する
-            $post->image = $filename;
-            // $requestの配列にimage = $filenameを追加
-            $request['image'] = $filename;
-            // public/imagesディレクトリから画像を削除する
-            File::delete(public_path('images/'.$oldFileName));
+            $images = $request->file('featured_image');
+            //各Fileに対し以下の処理をする
+            foreach ($images as $file) {
+                // File名を取得
+                $filename = $file->getClientOriginalName();
+                // Fileの保存先を$loacationに格納
+                $location = public_path('images/'. $filename);
+                // Fileをリサイズして$locationに保存
+                Image::make($file)->resize(400, 200)->save($location);
+                $image = array('post_id' => $request->id, 'image' => $filename);
+                // imagesテーブルにFile名を保存する
+                $this->image_model->createImage($image);
             }
+        }
 
         /* $requestからパラメータの配列のみ取得し$inputに格納 */
         $input = $request->all();
@@ -152,7 +143,9 @@ class PostsController extends Controller
     public function show($id)
     {
         $post = $this->post_model->showPost($id);
-        return view('posts.show')->with('post', $post);
+        $images = $this->image_model->getAllImage();
+        return view('posts.show')->with('post', $post)
+                                 ->with('images', $images);
     }
 
 }
