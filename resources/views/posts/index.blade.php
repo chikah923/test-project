@@ -19,7 +19,7 @@
 
   <p>
     <label>Select image to Upload: </label>
-    <input type="file" name ="featured_image" id="featured_image">
+    <input type="file" name ="featured_image[]" multiple id="featured_image">
   </p>
 
   <p>
@@ -36,9 +36,14 @@
     <a class="edit" href="/posts/show/{{ $post->id }}">※</a>
   </li>
   <li>{!! nl2br(e($post->body)) !!}</li>
-    @if ($post->image!= NULL)
-    <img src="{{ asset('images/'. $post->image) }}" width="400" height="200">
-    @endif
+
+    @foreach ($images as $image)
+      @if ($post->id == $image->post_id)
+    <img src="{{ asset('images/'. $image->image) }}" width="400" height="200">
+    <br>
+      @endif
+    @endforeach
+
   <hr />
   @empty
   <li>No posts yet</li>

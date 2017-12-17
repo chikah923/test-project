@@ -22,14 +22,17 @@
     @endif
   </p>
 
-    @if ($post->image!= NULL)
-    <img src="{{ asset('images/'. $post->image) }}" width="400" height="200">
-    <a class="del" href="/posts/del/image/{{ $post->id }}">[delete image]</a>
-    @endif
+    @foreach ($images as $image)
+      @if ($post->id == $image->post_id)
+      <img src="{{ asset('images/'. $image->image) }}" width="400" height="200">
+      <a class="del" href="/posts/del/image/{{ $image->id }}">[delete image]</a>
+      <br>
+      @endif
+    @endforeach
 
   <p>
     <label>Upload new image: </label>
-    <input type="file" name ="featured_image" id="featured_image">
+    <input type="file" name ="featured_image[]" id="featured_image">
   </p>
 
   <p>

@@ -11,9 +11,12 @@
 <p>{!! nl2br(e($post->body)) !!}  </p>
 
 <p>
-   @if ($post->image!= NULL)
-  <img src="{{ asset('images/'. $post->image) }}" width="400" height="200">
-  @endif
+  @foreach ($images as $image)
+   @if ($post->id == $image->post_id)
+   <img src="{{ asset('images/'. $image->image) }}" width="400" height="200">
+   <br>
+   @endif
+  @endforeach
 </p>
 
 
