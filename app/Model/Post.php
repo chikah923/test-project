@@ -29,6 +29,16 @@ class Post extends Model
         return $this->hasMany('App\Model\Image');
     }
 
+    /** tagsテーブルとpostsテーブルの紐付きを設定
+    *
+    * @access public
+    * @return void
+    */
+    public function tags()
+    {
+        return $this->belongsToMany('App\Model\Tag');
+    }
+
     /** postsテーブルのレコードを全件取得
     *
     * @access public

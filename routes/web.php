@@ -14,6 +14,7 @@
 Route::get('/', 'PostsController@index');
 Route::post('/posts', 'PostsController@store');
 Route::get('/posts/del/{id}', 'PostsController@destroy');
+Route::get('/posts/search', 'PostsController@search');
 Route::get('/posts/{id}', 'PostsController@edit');
 Route::post('/posts/update/{id}', 'PostsController@update');
 Route::get('/posts/del/image/{image_id}', 'ImagesController@destroy');

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests\PostRequest;
 use App\Model\Post as PostModel;
 use App\Model\Image as ImageModel;
+use App\Model\Tag as TagModel;
 use Image;
 use File;
 
@@ -13,20 +14,21 @@ class PostsController extends Controller
 {
     private $post_model;
     public  $image_model;
-
+    public  $tag_model;
     /** Postモデルをインスタンス化する
     *
     * @access public
     * @param obj $post_model
     * @return void
     */
-    public function __construct(PostModel $post_model, ImageModel $image_model)
+    public function __construct(PostModel $post_model, ImageModel $image_model, TagModel $tag_model)
     {
         $this->post_model = $post_model;
         $this->image_model = $image_model;
+        $this->tag_model = $tag_model;
     }
 
-    /** 既存のpostsデータを全件取得する
+    /** 既存のpostsデータ件取得する
     *
     * @access public
     * @return response
@@ -35,8 +37,10 @@ class PostsController extends Controller
     {
         $posts = $this->post_model->getAllPost();
         $images = $this->image_model->getAllImage();
+        $tags = $this->tag_model->getAllTag();
         return view ('posts.index')->with('posts', $posts)
-                                   ->with('images', $images);
+                                   ->with('images', $images)
+                                   ->with('tags', $tags);
     }
 
     /** postデータの新規保存
@@ -50,7 +54,8 @@ class PostsController extends Controller
         /* $requestからパラメータの配列のみ取得し$inputに格納 */
         $input = $request->all();
         $post = $this->post_model->createPost($input);
-
+        /* 中間テーブルtag_postにレコードを挿入する */
+        $post->tags()->attach(request()->tags);
         /* RequestにFile uploadが含まれている場合、以下の処理をする */
         if ($request->hasFile('featured_image')) {
             $images = $request->file('featured_image');
@@ -97,10 +102,11 @@ class PostsController extends Controller
     */
     public function edit($id)
     {
-        $post = $this->post_model->getPostFromId($id);
-        $images = $this->image_model->getAllImage();
-        return view('posts.edit')->with('post', $post)
-                                 ->with('images', $images);
+        return view('posts.edit')->with([
+	    'post' => $this->post_model->getPostFromId($id),
+            'images' => $this->image_model->getAllImage(),
+            'tags' => $this->tag_model->getAllTag()
+	]);
     }
 
     /** 該当するpostデータの更新
@@ -144,8 +150,35 @@ class PostsController extends Controller
     {
         $post = $this->post_model->showPost($id);
         $images = $this->image_model->getAllImage();
+        $tags = $this->tag_model->getAllTag();
         return view('posts.show')->with('post', $post)
-                                 ->with('images', $images);
+                                 ->with('images', $images)
+                                 ->with('tags', $tags);
+    }
+
+
+
+    public function search(Request $request)
+    {
+        //検索フォームに入力された文字列を取得する
+        $keyword = $request->input('keyword');
+
+        //query()て何？modelに移動？
+        $query = PostModel::query();
+        if (!empty($keyword)) {
+            $query->where('name', 'like', '%'.$keyword.'%')
+                  ->orWhere('body', 'like', '%'.$keyword.'%');
+            $posts = $query->orderBy('created_at','desc')->paginate(10);
+        }else {
+            $posts = $this->post_model->getAllPost();
+        }
+
+        return view('posts.index')->with([
+            'posts' => $posts,
+            'keyword' => $keyword,
+            'images' => $this->image_model->getAllImage(),
+            'tags' => $this->tag_model->getAllTag()
+        ]);
     }
 
 }

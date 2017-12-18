@@ -15,6 +15,7 @@
     <input type="hidden" name="id" placeholder="number" value="{{ $post->id }}">
     <input name="name" placeholder="Your name" type="text" value="{{ old('name', $post->name) }}" />
   </p>
+
   <p>
     <textarea name="body" placeholder="Enter comments">{{ old('body', $post->body) }}</textarea>
     @if ($errors->has('body'))
@@ -26,7 +27,7 @@
       @if ($post->id == $image->post_id)
       <img src="{{ asset('images/'. $image->image) }}" width="400" height="200">
       <a class="del" href="/posts/del/image/{{ $image->id }}">[delete image]</a>
-      <br>
+      <br><br>
       @endif
     @endforeach
 

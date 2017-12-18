@@ -11,10 +11,17 @@
 <p>{!! nl2br(e($post->body)) !!}  </p>
 
 <p>
+  @foreach ($post->tags as $tag)
+    #{{ $tag->name }}
+    <br>
+  @endforeach
+</p>
+
+<p>
   @foreach ($images as $image)
    @if ($post->id == $image->post_id)
    <img src="{{ asset('images/'. $image->image) }}" width="400" height="200">
-   <br>
+   <br><br>
    @endif
   @endforeach
 </p>
