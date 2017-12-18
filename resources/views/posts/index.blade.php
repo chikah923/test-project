@@ -3,7 +3,17 @@
 @section('title', 'Ladies Forum')
 
 @section('content')
-<h1>Ladies Forum</h1>
+<h1><a class="header-menu" href="/">Ladies Forum</a></h1>
+
+<div class="col-sm-20" style="text-align:right;">
+<form action="/posts/search" method="get" class="form-inline">
+  <input type="text" name="keyword" placeholder="Keyword">
+  <input type="submit" value="Search" class="btn btn-info">
+</form>
+</div>
+
+<br><br>
+
 <form action = "/posts"  method ="post" enctype= "multipart/form-data">
   {{ csrf_field() }}
   <p>
@@ -16,6 +26,13 @@
     <span class="error">{{ $errors->first('body') }}</span>
     @endif
   </p>
+
+  <p>
+    @foreach ($tags as $tag)
+      <input type="checkbox" name="tags[]" value="{{ $tag->id }}">{{ $tag->name }}
+    @endforeach
+  </p>
+
 
   <p>
     <label>Select image to Upload: </label>
@@ -35,12 +52,22 @@
     <a class="edit" href="/posts/{{ $post->id }}">[edit]</a>
     <a class="edit" href="/posts/show/{{ $post->id }}">※</a>
   </li>
+
+  <p>
+      @foreach ($post->tags as $tag)
+        <div class="tag">
+        #{{ $tag->name }}
+        <br>
+        </div>
+      @endforeach
+  </p>
+
   <li>{!! nl2br(e($post->body)) !!}</li>
 
     @foreach ($images as $image)
       @if ($post->id == $image->post_id)
     <img src="{{ asset('images/'. $image->image) }}" width="400" height="200">
-    <br>
+    <br><br>
       @endif
     @endforeach
 
@@ -51,7 +78,7 @@
 </ul>
 
 <div class="paginate">
-{{ $posts->links() }}
+{{ $posts->appends(Request::only('keyword'))->links() }}
 </div>
 
 @endsection
