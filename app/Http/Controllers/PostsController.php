@@ -80,10 +80,10 @@ class PostsController extends Controller
     *         Postのidを格納
     * @return response
     */
-    public function update(PostRequest $request, $id)
+    public function update(PostRequest $request)
     {
         $input = $request->all();
-        $this->post_model->updatePost($input, $id);
+        $this->post_model->updatePost($input);
         return redirect('/');
     }
 

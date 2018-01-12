@@ -36,9 +36,9 @@ class Comment extends Model
     *         削除対象Commentのidを格納
     * @return void
     */
-    public function deleteComment($comment)
+    public function deleteComment($id)
     {
-        return $this->find($comment)
+        return $this->find($id)
                     ->delete();
     }
 }

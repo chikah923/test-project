@@ -18,4 +18,4 @@ Route::get('/posts/{id}', 'PostsController@edit');
 Route::post('/posts/update/{id}', 'PostsController@update');
 Route::get('/posts/show/{id}', 'PostsController@show');
 Route::post('posts/{id}/comments', 'CommentsController@store');
-Route::get('/posts/comments/{comment}', 'CommentsController@destroy');
+Route::get('/posts/comments/{comment_id}', 'CommentsController@destroy');
