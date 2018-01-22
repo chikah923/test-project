@@ -9,6 +9,8 @@
   <a class="header-menu" href="/">Back</a>
 </h1>
 <h2>Edit Post</h2>
+
+<div class="col-sm-8" style="text-align:left;">
 <form action="/posts/update/{{$post->id}}" method="post" enctype= "multipart/form-data">
   {{ csrf_field() }}
   <p>
@@ -23,13 +25,15 @@
     @endif
   </p>
 
+  <p>
     @foreach ($images as $image)
       @if ($post->id == $image->post_id)
       <img src="{{ asset('images/'. $image->image) }}" width="400" height="200">
-      <a class="del" href="/posts/del/image/{{ $image->id }}">[delete image]</a>
+      <a class="del" href="/posts/del/image/{{ $image->id }}">[x]</a>
       <br><br>
       @endif
     @endforeach
+  </p>
 
   <p>
     <label>Upload new image: </label>
@@ -40,4 +44,5 @@
     <input type="submit" value="Update" />
   </p>
 </form>
+<div>
 @endsection

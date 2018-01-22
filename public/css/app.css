@@ -8357,7 +8357,7 @@ body {
 }
 
 .container {
-  width: 400px;
+  width: 800px;
   margin: 20px auto;
   text-align: center;
 }
@@ -8377,6 +8377,7 @@ h2 {
 
 ul {
   list-style: none;
+  width: 800px;
 }
 
 .tag {
@@ -8385,6 +8386,9 @@ ul {
   -webkit-box-shadow: 0 0 0 1px #8d1e47;
           box-shadow: 0 0 0 1px #8d1e47;
   color: #fff;
-  margin: 2em 0;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100px;
+  float: right;
 }
 

@@ -12,8 +12,7 @@
 </form>
 </div>
 
-<br><br>
-
+<div class="col-sm-8" style="text-align:left;">
 <form action = "/posts"  method ="post" enctype= "multipart/form-data">
   {{ csrf_field() }}
   <p>
@@ -43,7 +42,21 @@
     <input type="submit" value="Post Comment">
   </p>
 </form>
+</div>
 
+<div class="paginate">
+{{ $posts->appends(Request::only('keyword'))->links() }}
+</div>
+
+<div class="col-sm-20" style="text-align:right;">
+Sort by:
+  <a href="/posts/sort/lastupdated">[Last Updated]</a>
+  <a href="/posts/sort/comments">[Most Commented]</a>
+</div>
+
+<br><br>
+
+<div class="col-sm-8" style="text-align:left;">
 <ul>
   @forelse ($posts as $post)
   <li>
@@ -53,22 +66,11 @@
     <a class="edit" href="/posts/show/{{ $post->id }}">※</a>
   </li>
 
-  <p>
-      @foreach ($post->tags as $tag)
-        <div class="tag">
-        #{{ $tag->name }}
-        <br>
-        </div>
-      @endforeach
-  </p>
-
-  <li>{!! nl2br(e($post->body)) !!}</li>
-
-    @foreach ($images as $image)
-      @if ($post->id == $image->post_id)
-    <img src="{{ asset('images/'. $image->image) }}" width="400" height="200">
-    <br><br>
-      @endif
+    @foreach ($post->tags as $tag)
+      <div class="tag">
+       #{{ $tag->name }}
+       <br>
+      </div>
     @endforeach
 
   <hr />
@@ -76,6 +78,7 @@
   <li>No posts yet</li>
   @endforelse
 </ul>
+</div>
 
 <div class="paginate">
 {{ $posts->appends(Request::only('keyword'))->links() }}

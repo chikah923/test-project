@@ -3,14 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Model\Post;
 use App\Model\Tag as TagModel;
 
 class TagsController extends Controller
 {
     private $comment_model;
 
-    /** commentモデルをインスタンス化する
+    /** tagモデルをインスタンス化する
     *
     * @access public
     * @param  obj $tag_model

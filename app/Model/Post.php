@@ -39,7 +39,7 @@ class Post extends Model
         return $this->belongsToMany('App\Model\Tag');
     }
 
-    /** postsテーブルのレコードを全件取得
+    /** postsテーブルのレコードを全件取得(作成日時の降順)
     *
     * @access public
     * @return void
@@ -47,6 +47,17 @@ class Post extends Model
     public function getAllPost()
     {
         return $this->orderBy('created_at', 'desc')
+                    ->paginate(10);
+    }
+
+    /** postsテーブルのレコードを全件取得(更新日時の降順)
+    *
+    * @access public
+    * @return void
+    */
+    public function getAllPostByLastUpdated()
+    {
+        return $this->orderby('updated_at', 'desc')
                     ->paginate(10);
     }
 
@@ -69,20 +80,8 @@ class Post extends Model
     */
     public function deletePost($id)
     {
-        return $this->find($id)
+        return $this->findOrFail($id)
                     ->delete();
-    }
-
-    /** 該当するpostからimageのみNULLに更新
-    *
-    * @access public
-    * @param  int $id
-    * @return void
-    */
-    public function deleteImageFromPost($id)
-    {
-         DB::table('posts')->where('id', $id)
-                           ->update(['image' => NULL]);
     }
 
     /** 該当するpostレコードの取得
@@ -93,7 +92,7 @@ class Post extends Model
     */
     public function getPostFromId($id)
     {
-        return $this->find($id);
+        return $this->findOrFail($id);
     }
 
     /** 該当するpostの更新
@@ -105,7 +104,7 @@ class Post extends Model
     public function updatePost($input)
     {
   // dd($input);
-        return $this->find($input['id'])
+        return $this->findOrFail($input['id'])
                     ->update($input);
     }
 
@@ -117,8 +116,19 @@ class Post extends Model
     */
     public function showPost($id)
     {
-        return $this->find($id);
+        return $this->findOrFail($id);
+    }
+
+
+    /** 中間テーブルtag_postにレコードを挿入する
+    *
+    * @access public
+    * @param  String[] $post
+    * @param  int $tag
+    * @return void
+    */
+    public function createTagPost($post, $tag){
+        return $post->tags()->attach($tag);
     }
 
 }
-

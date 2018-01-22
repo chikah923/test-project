@@ -12,12 +12,18 @@
 */
 
 Route::get('/', 'PostsController@index');
-Route::post('/posts', 'PostsController@store');
-Route::get('/posts/del/{id}', 'PostsController@destroy');
-Route::get('/posts/search', 'PostsController@search');
-Route::get('/posts/{id}', 'PostsController@edit');
-Route::post('/posts/update/{id}', 'PostsController@update');
-Route::get('/posts/del/image/{image_id}', 'ImagesController@destroy');
-Route::get('/posts/show/{id}', 'PostsController@show');
-Route::post('posts/{id}/comments', 'CommentsController@store');
-Route::get('/posts/comments/{comment_id}', 'CommentsController@destroy');
+
+Route::group(['prefix' => '/posts'], function($router) {
+    $router->post('/', 'PostsController@store');
+    $router->get('/del/{id}', 'PostsController@destroy');
+    $router->get('/search', 'PostsController@search');
+    $router->get('/sort/comments', 'CommentsController@sortByComment');
+    $router->get('/sort/lastupdated', 'PostsController@sortByLastUpdated');
+    $router->get('/{id}', 'PostsController@edit');
+    $router->post('/update/{id}', 'PostsController@update');
+    $router->get('/del/image/{image_id}', 'ImagesController@destroy');
+    $router->get('/show/{id}', 'PostsController@show');
+    $router->post('/{id}/comments', 'CommentsController@store');
+    $router->get('/comments/{comment_id}', 'CommentsController@destroy');
+});
+

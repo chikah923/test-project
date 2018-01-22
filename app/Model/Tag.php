@@ -3,6 +3,7 @@
 namespace App\Model;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Model\Post as PostModel;
 
 class Tag extends Model
 {
@@ -16,7 +17,7 @@ class Tag extends Model
     */
     public function posts()
     {
-        return $this->belongToMany('App\Model\Post');
+        return $this->belongsToMany('App\Model\Post');
     }
 
     /** レコードを全件取得

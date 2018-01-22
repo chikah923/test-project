@@ -15,17 +15,18 @@ class Image extends Model
     */
     public function post()
     {
-        return $this->belongTo('App\Model\Post');
+        return $this->belongsTo('App\Model\Post');
     }
 
-    /** レコードを全件取得
+    /** カラム'post_id'がpostsテーブルのカラム'id'に等しいレコードの抽出
     *
     * @access public
+    * @param  int $id
     * @return void
     */
-    public function getAllImage()
+    public function getImageOfPostId($id)
     {
-        return $this->orderBy('created_at', 'desc')
+        return $this->where('post_id', $id)
                     ->get();
     }
 
