@@ -38,6 +38,7 @@ class PostsController extends Controller
     {
         return view ('posts.index')->with([
             'posts' => $this->post_model->getAllPost(),
+            'pager_link' => $this->post_model->getAllPost()->links(),
             'tags' => $this->tag_model->getAllTag()
         ]);
     }
@@ -121,7 +122,7 @@ class PostsController extends Controller
     * @param  String[] $request
     * @return response
     */
-    private function update(PostRequest $request)
+    public function update(PostRequest $request)
     {
         /* RequestにFile uploadが含まれている場合、以下の処理をする */
         if ($request->hasFile('featured_image')) {
@@ -181,9 +182,9 @@ class PostsController extends Controller
         }else {
             $posts = $this->post_model->getAllPost();
         }
-
         return view('posts.index')->with([
             'posts' => $posts,
+            'pager_link' => $posts->links(),
             'keyword' => $keyword,
             'tags' => $this->tag_model->getAllTag()
         ]);

@@ -1,9 +1,8 @@
-@extends('layouts.default')
+{% extends('layouts/default') %}
 
-@section('title', 'Ladies Forum')
+{% block title %}Ladies Forum{% endblock %}
 
-@section('content')
-<h1><a class="header-menu" href="/">Ladies Forum</a></h1>
+{% block content %}
 
 <div class="col-sm-20" style="text-align:right;">
 <form action="/posts/search" method="get" class="form-inline">
@@ -21,15 +20,15 @@
 
   <p>
     <textarea name="body" placeholder="Enter comments">{{ old('body') }}</textarea>
-    @if ($errors->has('body'))
-    <span class="error">{{ $errors->first('body') }}</span>
-    @endif
+    {% if errors.first('body') %}
+      <span class="error">{{ errors.first('body') }}</span>
+    {% endif %}
   </p>
 
   <p>
-    @foreach ($tags as $tag)
-      <input type="checkbox" name="tags[]" value="{{ $tag->id }}">{{ $tag->name }}
-    @endforeach
+    {% for tag in tags %}
+      <input type="checkbox" name="tags[]" value="{{ tag.id }}">{{ tag.name }}
+    {% endfor %}
   </p>
 
 
@@ -44,44 +43,37 @@
 </form>
 </div>
 
-<div class="paginate">
-{{ $posts->appends(Request::only('keyword'))->links() }}
-</div>
-
 <div class="col-sm-20" style="text-align:right;">
 Sort by:
   <a href="/posts/sort/lastupdated">[Last Updated]</a>
-  <a href="/posts/sort/comments">[Most Commented]</a>
 </div>
+
+{{ pager_link|raw }}
 
 <br><br>
 
 <div class="col-sm-8" style="text-align:left;">
 <ul>
-  @forelse ($posts as $post)
+  {% for post in posts %}
   <li>
-    {{ $post->name }} [{{ $post->created_at }}]
-    <a class="del" href="/posts/del/{{ $post->id }}">[x]</a>
-    <a class="edit" href="/posts/{{ $post->id }}">[edit]</a>
-    <a class="edit" href="/posts/show/{{ $post->id }}">※</a>
+    {{ post.name }} [{{ post.created_at }}]
+    <a class="del" href="/posts/del/{{ post.id }}">[x]</a>
+    <a class="edit" href="/posts/{{ post.id }}">[edit]</a>
+    <a class="edit" href="/posts/show/{{ post.id }}">※</a>
   </li>
 
-    @foreach ($post->tags as $tag)
+    {% for tag in post.tags %}
       <div class="tag">
-       #{{ $tag->name }}
+       #{{ tag.name }}
        <br>
       </div>
-    @endforeach
-
+    {% endfor %}
   <hr />
-  @empty
-  <li>No posts yet</li>
-  @endforelse
+  {% endfor %}
 </ul>
 </div>
 
-<div class="paginate">
-{{ $posts->appends(Request::only('keyword'))->links() }}
-</div>
+{{ pager_link|raw }}
 
-@endsection
+{% endblock %}
+
