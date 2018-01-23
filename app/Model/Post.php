@@ -3,7 +3,6 @@
 namespace App\Model;
 
 use Illuminate\Database\Eloquent\Model;
-use DB;
 
 class Post extends Model
 {
@@ -48,6 +47,7 @@ class Post extends Model
     {
         return $this->orderBy('created_at', 'desc')
                     ->paginate(10);
+
     }
 
     /** postsテーブルのレコードを全件取得(更新日時の降順)

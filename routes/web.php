@@ -12,6 +12,7 @@
 */
 
 Route::get('/', 'PostsController@index');
+Route::view('/allabout', 'posts/about');
 
 Route::group(['prefix' => '/posts'], function($router) {
     $router->post('/', 'PostsController@store');
