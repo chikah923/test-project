@@ -24,7 +24,15 @@ class PostRequest extends FormRequest
     public function rules()
     {
         return [
-             'body' => 'required|min:3'
+            'name' => 'required',
+            'body' => 'required|min:3'
         ];
     }
+
+    public function messages(){
+        return [
+            'name.required' => 'you forgot to input your name!'
+            ];
+    }
+
 }

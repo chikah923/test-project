@@ -15,7 +15,8 @@ Route::get('/', 'PostsController@index');
 Route::view('/allabout', 'posts/about');
 
 Route::group(['prefix' => '/posts'], function($router) {
-    $router->post('/', 'PostsController@store');
+    $router->post('/', 'PostsController@post');
+    $router->get('/complete', 'PostsController@store');
     $router->get('/del/{id}', 'PostsController@destroy');
     $router->get('/search', 'PostsController@search');
     $router->get('/sort/comments', 'CommentsController@sortByComment');
@@ -28,3 +29,6 @@ Route::group(['prefix' => '/posts'], function($router) {
     $router->get('/comments/{comment_id}', 'CommentsController@destroy');
 });
 
+//Route::get('/login', 'Auth\LoginController@showLoginForm');
+Auth::routes();
+Route::get('/home', 'HomeController@index')->name('home');

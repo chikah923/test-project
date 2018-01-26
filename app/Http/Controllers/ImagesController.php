@@ -32,7 +32,7 @@ class ImagesController extends Controller
     {
         // public/images フォルダにある画像を削除
         $image = $this->image_model->getImageFromID($id);
-        File::delete(public_path('images/'.$image->image));
+        File::delete(storage_path('app/public/prod/'.$image->session_id. '/'.$image->image));
 
         // 該当するレコードを削除
         $this->image_model->deleteImage($id);
