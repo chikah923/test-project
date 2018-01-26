@@ -1,4 +1,4 @@
-{% extends('layouts/default') %}
+{% extends('layouts/auth_default') %}
 
 {% block title %}Ladies Forum{% endblock %}
 
@@ -15,7 +15,10 @@
 <form action = "/posts"  method ="post" enctype= "multipart/form-data">
   {{ csrf_field() }}
   <p>
-    <input type="text" name="name" placeholder="Your name" value= "{{ old('title') }}">
+    <input type="text" name="name" placeholder="Your name" value= "{{ old('name') }}">
+    {% if errors.first('name') %}
+      <span class="error">{{ errors.first('name') }}</span>
+    {% endif %}
   </p>
 
   <p>
@@ -61,7 +64,6 @@ Sort by:
     <a class="edit" href="/posts/{{ post.id }}">[edit]</a>
     <a class="edit" href="/posts/show/{{ post.id }}">※</a>
   </li>
-
     {% for tag in post.tags %}
       <div class="tag">
        #{{ tag.name }}

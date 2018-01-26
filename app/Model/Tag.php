@@ -30,5 +30,15 @@ class Tag extends Model
         return $this->all();
     }
 
+    /** tagの名前を取得
+    *
+    * @access public
+    * @param  String[] $tag
+    * @return void
+    */
+    public function getTagName($tagId)
+    {
+        return $this->findOrFail($tagId);
+    }
 }
 

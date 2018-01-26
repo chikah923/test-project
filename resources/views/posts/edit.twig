@@ -1,4 +1,4 @@
-{% extends('layouts/default') %}
+{% extends('layouts/auth_default') %}
 
 {% block title %}Ladies Forum - Update{% endblock %}
 
@@ -23,7 +23,7 @@
   <p>
     {% for image in images %}
       {% if post.id == image.post_id %}
-        <img src="{{ base_path ~ directory }}/images/{{ image.image }}" width="400" height="200">
+        <img src="{{ base_path ~ directory }}/storage/prod/{{ image.session_id }}/{{ image.image }}" width="400" height="200">
         <a class="del" href="/posts/del/image/{{ image.id }}">[x]</a>
         <br><br>
        {% endif %}

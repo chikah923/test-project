@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Image extends Model
 {
-    protected $fillable = ['image', 'post_id'];
+    protected $fillable = ['image', 'post_id', 'session_id'];
 
     /** imagesテーブルとpostsテーブルの紐付きを設定
     *
