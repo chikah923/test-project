@@ -11,6 +11,8 @@
 </form>
 </div>
 
+<h2>Approve the post to be published</h2>
+
 <div class="col-sm-8" style="text-align:left;">
 <form action = "/posts"  method ="post" enctype= "multipart/form-data">
   {{ csrf_field() }}
@@ -55,27 +57,32 @@ Sort by:
   <ul class="pagination">
     {{ pager_link|raw }}
   </ul>
-<nav>
+</nav>
 
 <br><br>
 
 <div class="col-sm-8" style="text-align:left;">
 <ul>
-  {% for post in posts %}
-  <li>
-    {{ post.name }} [{{ post.created_at }}]
-    <a class="del" href="/posts/del/{{ post.id }}">[x]</a>
-    <a class="edit" href="/posts/{{ post.id }}">[edit]</a>
-    <a class="edit" href="/posts/show/{{ post.id }}">※</a>
-  </li>
+  <form action = "/admin/index/post"  method ="post">
+  {{ csrf_field() }}
+    {% for post in posts %}
+    <li>
+      <input type="checkbox" name="chk_flg[]" value="{{ post.id }}">
+      {{ post.name }} [{{ post.created_at }}]
+      <a class="del" href="/posts/del/{{ post.id }}">[x]</a>
+      <a class="edit" href="/posts/{{ post.id }}">[edit]</a>
+      <a class="edit" href="/posts/show/{{ post.id }}">※</a>
+    </li>
     {% for tag in post.tags %}
       <div class="tag">
        #{{ tag.name }}
        <br>
       </div>
     {% endfor %}
-  <hr />
-  {% endfor %}
+    <hr />
+    {% endfor %}
+     <input type="submit" value="Approve post">
+  </form>
 </ul>
 </div>
 
