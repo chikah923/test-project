@@ -12,6 +12,7 @@ use Image;
 use File;
 use Session;
 use Auth;
+use DB;
 
 class PostsController extends Controller
 {
@@ -34,26 +35,29 @@ class PostsController extends Controller
     /** 既存のpostsデータ件取得する
     *
     * @access public
+    * @param  String[] $request
     * @return response
     */
     public function index(Request $request)
     {
+        // Loginユーザではない場合、ユーザ名以外のデータをviewに渡す
         if (is_null($request->user())){
             return view ('posts.index')->with([
-                'posts' => $this->post_model->getAllPost(),
-                'pager_link' => $this->post_model->getAllPost()->links(),
+                'posts' => $this->post_model->getAllAuthedPost(),
+                'pager_link' => $this->post_model->getAllAuthedPost()->links(),
                 'tags' => $this->tag_model->getAllTag()
             ]);
         }
-            return view ('posts.index')->with([
-                'posts' => $this->post_model->getAllPost(),
-                'user' =>$request->user()->name,
-                'pager_link' => $this->post_model->getAllPost()->links(),
-                'tags' => $this->tag_model->getAllTag()
-            ]);
+        // Loginユーザの場合、ユーザ名情報も含めたデータをviewに渡す
+        return view ('posts.index')->with([
+            'posts' => $this->post_model->getAllAuthedPost(),
+            'user' =>$request->user()->name,
+            'pager_link' => $this->post_model->getAllAuthedPost()->links(),
+            'tags' => $this->tag_model->getAllTag()
+        ]);
     }
 
-    /** 入力内容をFlashに保存し、確認画面にリダイレクト
+    /** 入力内容をFlashに保存し、確認画面にリダイレクトする
     *
     * @access public
     * @param  String[] $request
@@ -143,22 +147,23 @@ class PostsController extends Controller
             return redirect('/')
                 ->withInput($input);
         }
+        try {
+            DB::transaction(function () use ($input) {
+                /* postデータを保存する */
+                $post = $this->post_model->createPost($input);
+                /* Requestにtagの入力があった場合、中間テーブルtag_postにレコードを挿入する */
+                 if(isset($input['tags'])) {
+                    $tag = $input['tags'];
+                    $this->post_model->createTagPost($post, $tag);
+                 }
 
-        /* postデータを保存する */
-        $post = $this->post_model->createPost($input);
-        /* Requestにtagの入力があった場合、中間テーブルtag_postにレコードを挿入する */
-        if(isset($input['tags'])) {
-            $tag = $input['tags'];
-            $this->post_model->createTagPost($post, $tag);
-        }
-
-        /* RequestにFile uploadが含まれていた場合、以下の処理をする */
-            $sessionId = Session::getId();
+                /* RequestにFile uploadが含まれていた場合、以下の処理をする */
+                $sessionId = Session::getId();
                 // post時に作成した、temp下のSession ID名ディレクトリのパスを取得する
                 $tempPath = storage_path('app/public/temp/'.$sessionId);
                 // temo下にSession Id名のディレクトリが存在すれば、以下の処理をする
                 if(file_exists($tempPath)) {
-                // prod下にSession ID名でディレクトリを作成
+                    // prod下にSession ID名でディレクトリを作成
                     mkdir(storage_path('app/public/prod/'.$sessionId), '0777');
                     // temp下のSession ID名ディレクトリのハンドルがオープンである場合、以下の処理をする
                     if ($handle = opendir($tempPath)) {
@@ -175,7 +180,10 @@ class PostsController extends Controller
                         }
                     }
                 }
-
+            });
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
         return view('posts/completed');
     }
 
@@ -186,14 +194,23 @@ class PostsController extends Controller
     * @param  int $id
     * @return response
     */
-    public function destroy($id)
+    public function destroy(int $id, Request $request)
     {
+        if (is_null($request->user())){
+            return view ('posts.error_exception');
+        }
         /* 該当するpostデータにFileが存在する場合、public/imagesディレクトリから画像を削除する */
         $images = $this->image_model->getImageOfPostId($id);
-        foreach ($images as $image) {
-            File::delete(storage_path('app/public/prod/'.$image->session_id. '/'.$image->image));
+        try {
+            DB::transaction(function () use ($images, $id) {
+                foreach ($images as $image) {
+                    File::delete(storage_path('app/public/prod/'.$image->session_id. '/'.$image->image));
+                }
+                $this->post_model->deletePost($id);
+            });
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
         }
-        $this->post_model->deletePost($id);
         return redirect('/');
     }
 
@@ -203,7 +220,7 @@ class PostsController extends Controller
     * @param  int $id
     * @return response
     */
-    public function edit($id)
+    public function edit(int $id)
     {
         return view('posts.edit')->with([
             'post' => $this->post_model->getPostFromId($id),
@@ -220,26 +237,32 @@ class PostsController extends Controller
     */
     public function update(PostRequest $request)
     {
-        /* RequestにFile uploadが含まれている場合、以下の処理をする */
-        if ($request->hasFile('featured_image')) {
-            $images = $request->file('featured_image');
-            //各Fileに対し以下の処理をする
-            foreach ($images as $file) {
-                // File名を取得
-                $fileName = $file->getClientOriginalName();
-                // Fileの保存先を$loacationに格納
-                $location = public_path('images/'. $fileName);
-                // Fileをリサイズして$locationに保存
-                Image::make($file)->resize(400, 200)->save($location);
-                $image = array('post_id' => $request->id, 'image' => $fileName);
-                // imagesテーブルにFile名を保存する
-                $this->image_model->createImage($image);
-            }
-        }
+        try {
+            DB::transaction(function () use ($request) {
+                /* RequestにFile uploadが含まれている場合、以下の処理をする */
+                if ($request->hasFile('featured_image')) {
+                    $images = $request->file('featured_image');
+                    //各Fileに対し以下の処理をする
+                    foreach ($images as $file) {
+                        // File名を取得
+                        $fileName = $file->getClientOriginalName();
+                        // Fileの保存先を$loacationに格納
+                        $location = public_path('images/'. $fileName);
+                        // Fileをリサイズして$locationに保存
+                        Image::make($file)->resize(400, 200)->save($location);
+                        $image = array('post_id' => $request->id, 'image' => $fileName);
+                        // imagesテーブルにFile名を保存する
+                        $this->image_model->createImage($image);
+                    }
+                }
 
-        /* $requestからパラメータの配列のみ取得し$inputに格納 */
-        $input = $request->all();
-        $this->post_model->updatePost($input);
+                /* $requestからパラメータの配列のみ取得し$inputに格納 */
+                $input = $request->all();
+                $this->post_model->updatePost($input);
+            });
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
         return redirect('/');
     }
 
@@ -249,7 +272,7 @@ class PostsController extends Controller
     * @param  int $id
     * @return response
     */
-    public function show($id)
+    public function show(int $id)
     {
         return view('posts.show')->with([
             'post' => $this->post_model->showPost($id),
@@ -266,10 +289,8 @@ class PostsController extends Controller
     */
     public function search(Request $request)
     {
-        //検索フォームに入力された文字列を取得する
+        // 検索フォームに入力された文字列を取得する
         $keyword = $request->input('keyword');
-
-        //query()て何？modelに移動？
         $query = PostModel::query();
         if (!empty($keyword)) {
             $query->where('name', 'like', '%'.$keyword.'%')
@@ -295,6 +316,56 @@ class PostsController extends Controller
     {
         return view('posts.index')->with([
             'posts' => $this->post_model->getAllPostByLastUpdated(),
+            'tags' => $this->tag_model->getAllTag()
+        ]);
+    }
+
+    /** Loginユーザの場合管理者用のページを表示し、それ以外の場合はメッセージを表示する
+    *
+    * @access public
+    * @param String[] $request
+    * @return response
+    */
+    public function adminIndex(Request $request)
+    {
+        // Loginユーザではない場合、エラーの画面を返す
+        if (is_null($request->user())){
+            return view ('posts.error_exception');
+        }
+        // Loginユーザの場合、postsテーブルにあるレコードのうち、カラムchk_flgがFalseのものを表示する
+        return view ('posts.index_auth')->with([
+            'user' =>$request->user()->name,
+            'posts' => $this->post_model->getAllPostToBeAuth(),
+            'pager_link' => $this->post_model->getAllPostToBeAuth()->links(),
+            'tags' => $this->tag_model->getAllTag()
+        ]);
+    }
+
+    /** 未承認postの承認(該当するpostsテーブルレコードのカラムchk_flgの値をFalseからTrueにupdateする)
+    *
+    * @access public
+    * @param String[] $request
+    * @return response
+    */
+    public function authPost(Request $request)
+    {
+        // requestから、Checkboxを選択されたpost idの配列を取得する
+        $idArray = $request['chk_flg'];
+        try {
+            DB::transaction(function () use ($idArray) {
+                // カラムchk_flgの値をFalseからTrueにupdateする
+                foreach ($idArray as $id) {
+                    $this->post_model->UpdateColumnChkFlg($id);
+                }
+            });
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+        // postsテーブルにあるレコードのうち、カラムchk_flgがFalseのものを表示する
+        return view ('posts.index_auth')->with([
+            'user' =>$request->user()->name,
+            'posts' => $this->post_model->getAllPostToBeAuth(),
+            'pager_link' => $this->post_model->getAllPostToBeAuth()->links(),
             'tags' => $this->tag_model->getAllTag()
         ]);
     }

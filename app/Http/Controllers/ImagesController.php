@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Model\Post;
 use App\Model\Image as ImageModel;
 use File;
+use DB;
 
 class ImagesController extends Controller
 {
@@ -28,16 +29,21 @@ class ImagesController extends Controller
     * @param  obj
     * @return void
     */
-    public function destroy($id)
+    public function destroy(int $id)
     {
         // public/images フォルダにある画像を削除
         $image = $this->image_model->getImageFromID($id);
-        File::delete(storage_path('app/public/prod/'.$image->session_id. '/'.$image->image));
+        try {
+            DB::transaction(function () use ($image, $id) {
+                File::delete(storage_path('app/public/prod/'.$image->session_id. '/'.$image->image));
 
-        // 該当するレコードを削除
-        $this->image_model->deleteImage($id);
+                // 該当するレコードを削除
+                $this->image_model->deleteImage($id);
+            });
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
         return redirect()->back();
     }
-
 }
 

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Post extends Model
 {
-    protected $fillable = ['name', 'body', 'image'];
+    protected $fillable = ['name', 'body', 'image', 'chk_flg'];
 
     /** commentsテーブルとpostsテーブルの紐付きを設定
     *
@@ -38,14 +38,27 @@ class Post extends Model
         return $this->belongsToMany('App\Model\Tag');
     }
 
-    /** postsテーブルのレコードを全件取得(作成日時の降順)
+    /** postsテーブルのレコードのうち、カラムchk_flgがFalseのものを全件取得(作成日時の降順)
     *
     * @access public
     * @return void
     */
-    public function getAllPost()
+    public function getAllAuthedPost()
     {
-        return $this->orderBy('created_at', 'desc')
+        return $this->where('chk_flg', '1')
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(10);
+    }
+
+    /** postsテーブルのレコードのうち、カラムchk_flgがTrueのものを全件取得(作成の降順)
+    *
+    * @access public
+    * @return void
+    */
+    public function getAllPostToBeAuth()
+    {
+        return $this->where('chk_flg', '0')
+                    ->orderBy('created_at', 'desc')
                     ->paginate(10);
 
     }
@@ -129,6 +142,18 @@ class Post extends Model
     */
     public function createTagPost($post, $tag){
         return $post->tags()->attach($tag);
+    }
+
+    /** カラムchk_flgの値をFalseからTrueにupdateする
+    *
+    * @access public
+    * @param int $id
+    * @return void
+    */
+    public function UpdateColumnChkFlg($id)
+    {
+        return $this->where('id', $id)
+                    ->update(['chk_flg' => 1]);
     }
 
 }
