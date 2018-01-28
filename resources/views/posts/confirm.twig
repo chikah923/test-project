@@ -1,0 +1,50 @@
+{% extends('layouts/auth_default') %}
+
+{% block title %}Ladies Forum - Confirmation{% endblock %}
+
+{% block content %}
+
+<h2>Confirm Your Post</h2>
+
+<br><br>
+
+<body>
+   <table class="table table-bordered">
+   <tr>
+     <th><p>Your Name :</p></th>
+     <td>{{ input.name }}</td>
+   </tr>
+  </table>
+
+  <table class="table table-bordered">
+   <tr>
+     <th><p>Comment :</p></th>
+     <td>{{ input.body }}</td>
+   </tr>
+  </table>
+
+  <table class="table table-bordered">
+    <tr>
+     <th><p>Catagory :</p></th>
+       {% for tag in tags %}
+     <td>{{ tag }}</td>
+       {% endfor %}
+   </tr>
+  </table>
+
+  <table class="table table-bordered">
+    <tr>
+     <th><p>Image File :</p></th>
+       {% for filePath in images %}
+     <td><img src= "{{ base_path ~ directory }}/storage/temp/{{ filePath }}" width="400" height="200"></td>
+       {% endfor %}
+    </tr>
+  </table>
+
+<form action="/posts/complete" method="get" enctype= "multipart/form-data">
+{{ csrf_field() }}
+<input type="submit" name="action" value="Back">
+<input type="submit" name="action" value="Confirm">
+</form>
+
+{% endblock %}
