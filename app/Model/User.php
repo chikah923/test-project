@@ -37,5 +37,32 @@ class User extends Authenticatable
         return $this->hasOne('App\Model\VerifyUser');
     }
 
+    /** userの新規保存
+     *
+     * @access public
+     * @param  String[] $data
+     * @return void
+     */
+    public function createUser(array $data)
+    {
+       return $this->create([
+           'name' => $data['name'],
+           'email' => $data['email'],
+           'password' => bcrypt($data['password']),
+       ]);
+    }
+
+    /** 該当userのカラム"veried"を"0"から"1"に更新して認証済みuserとする
+     *
+     * @access public
+     * @param  String[] $user
+     * @return void
+     */
+    public function updateVerification($id)
+    {
+        return $this->where('id', $id)
+                    ->update(['verified' => 1]);
+    }
+
 }
 

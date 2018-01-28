@@ -18,5 +18,30 @@ class VerifyUser extends Model
         return $this->belongsTo('App\Model\User', 'user_id');
     }
 
+    /** userの新規保存
+     *
+     * @access public
+     * @param  String[] $user
+     * @return void
+     */
+    public function createVerifyUser($user)
+    {
+        return $this->create([
+            'user_id' => $user->id,
+            'token' => str_random(40),
+        ]);
+    }
+
+    /** userからのリクエストで受け取ったtokenと等しいtokenを持つレコードを取得
+     *
+     * @access public
+     * @param  string $token
+     * @return void
+     */
+    public function getVerifyUserWithToken($token)
+    {
+        return $this->where('token', $token)->first();
+    }
+
 }
 

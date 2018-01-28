@@ -37,7 +37,7 @@ class ImagesController extends Controller
             DB::transaction(function () use ($image, $id) {
                 File::delete(storage_path('app/public/prod/'.$image->session_id. '/'.$image->image));
 
-                // 該当するレコードを削除
+                // 該当するレコードをテーブルから削除
                 $this->image_model->deleteImage($id);
             });
         } catch (\Exception $e) {
