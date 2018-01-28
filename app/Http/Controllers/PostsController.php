@@ -27,6 +27,7 @@ class PostsController extends Controller
     */
     public function __construct(PostModel $post_model, ImageModel $image_model, TagModel $tag_model)
     {
+        $this->middleware('check.name');
         $this->post_model = $post_model;
         $this->image_model = $image_model;
         $this->tag_model = $tag_model;
