@@ -26,4 +26,16 @@ class User extends Authenticatable
     protected $hidden = [
         'password', 'remember_token',
     ];
+
+    /** verify_usersテーブルとの紐付きを設定
+     *
+     * @access public
+     * @return void
+     */
+    public function verifyUser()
+    {
+        return $this->hasOne('App\Model\VerifyUser');
+    }
+
 }
+

@@ -10,7 +10,6 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
-
 Route::get('/', 'PostsController@index');
 Route::view('/allabout', 'posts/about');
 
@@ -35,4 +34,5 @@ Route::group(['prefix' => '/posts'], function($router) {
 });
 
 Auth::routes();
+Route::get('/user/verify/{token}', 'Auth\RegisterController@verifyUser');
 Route::get('/home', 'HomeController@index')->name('home');
