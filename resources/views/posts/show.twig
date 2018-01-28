@@ -1,0 +1,55 @@
+{% extends('layouts/auth_default') %}
+
+{% block title %}Ladies Forum - Update{% endblock %}
+
+{% block content %}
+
+<p> {{ post.name }} [{{ post.created_at }}]</p>
+<p>{{ post.body|nl2br }}  </p>
+
+<p>
+  {% for tag in post.tags %}
+    #{{ tag.name }}
+    <br>
+  {% endfor %}
+</p>
+
+<p>
+  {% for image in images %}
+   {% if post.id == image.post_id %}
+   <img src="{{ base_path ~ directory }}/storage/prod/{{ image.session_id }}/{{ image.image }}" width="400" height="200">
+   <br><br>
+   {% endif %}
+  {% endfor %}
+</p>
+
+
+<h2>＊Comments＊</h2>
+
+<ul>
+  {% for comment in post.comments %}
+  <li>
+    {{ comment.body }}
+    <a href="/posts/comments/{{ comment.id }}" class="del">[x]</a>
+  </li>
+  <hr>
+  {% endfor %}
+</ul>
+
+<form action = "/posts/{{ post.id }}/comments" method ="post">
+ {{ csrf_field() }}
+
+  <p>
+    <input type="hidden" name="post_id" placeholder="number" value= "{{ post.id }}">
+    <input type="text" name="body" placeholder="Comment" value= "{{ old('body') }}">
+    {% if errors.first('body') %}
+    <span class="error">{{ errors.first('body') }}</span>
+    {% endif %}
+  </p>
+
+  <p>
+    <input type="submit" value="Post Comment">
+  </p>
+
+</form>
+{% endblock %}
