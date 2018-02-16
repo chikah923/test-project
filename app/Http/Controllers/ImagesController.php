@@ -12,7 +12,7 @@ class ImagesController extends Controller
 {
     private $comment_model;
 
-    /** commentモデルをインスタンス化する
+    /** Imageモデルをインスタンス化する
     *
     * @access public
     * @param  obj $image_model
@@ -27,7 +27,7 @@ class ImagesController extends Controller
     *
     * @access public
     * @param  obj
-    * @return void
+    * @return response
     */
     public function destroy(int $id)
     {
@@ -36,7 +36,6 @@ class ImagesController extends Controller
         try {
             DB::transaction(function () use ($image, $id) {
                 File::delete(storage_path('app/public/prod/'.$image->session_id. '/'.$image->image));
-
                 // 該当するレコードをテーブルから削除
                 $this->image_model->deleteImage($id);
             });

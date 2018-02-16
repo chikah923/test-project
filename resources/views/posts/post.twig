@@ -41,10 +41,18 @@
     </tr>
   </table>
 
+
+<form action="/posts/return" method="get">
+{{ csrf_field() }}
+<input type="submit" name="action" value="Return">
+</form>
+
+<br>
+
 <form action="/posts/complete" method="get" enctype= "multipart/form-data">
 {{ csrf_field() }}
-<input type="submit" name="action" value="Back">
 <input type="submit" name="action" value="Confirm">
 </form>
 
 {% endblock %}
+

@@ -38,29 +38,28 @@ class Post extends Model
         return $this->belongsToMany('App\Model\Tag');
     }
 
-    /** postsテーブルのレコードのうち、カラムchk_flgがFalseのものを全件取得(作成日時の降順)
+    /** postsテーブルのレコードのうち、カラムchk_flgがtrueのものを全件取得(作成日時の降順)
     *
     * @access public
     * @return void
     */
     public function getAllAuthedPost()
     {
-        return $this->where('chk_flg', '1')
+        return $this->where('chk_flg', true)
                     ->orderBy('created_at', 'desc')
                     ->paginate(10);
     }
 
-    /** postsテーブルのレコードのうち、カラムchk_flgがTrueのものを全件取得(作成の降順)
+    /** postsテーブルのレコードのうち、カラムchk_flgがfalseのものを全件取得(作成の降順)
     *
     * @access public
     * @return void
     */
-    public function getAllPostToBeAuth()
+    public function getAllPostNeedAuth()
     {
-        return $this->where('chk_flg', '0')
+        return $this->where('chk_flg', false)
                     ->orderBy('created_at', 'desc')
                     ->paginate(10);
-
     }
 
     /** postsテーブルのレコードを全件取得(更新日時の降順)
@@ -144,7 +143,7 @@ class Post extends Model
         return $post->tags()->attach($tag);
     }
 
-    /** カラムchk_flgの値をFalseからTrueにupdateする
+    /** カラムchk_flgの値をfalseからtrueにupdateする
     *
     * @access public
     * @param int $id
@@ -153,7 +152,7 @@ class Post extends Model
     public function UpdateColumnChkFlg($id)
     {
         return $this->where('id', $id)
-                    ->update(['chk_flg' => 1]);
+                    ->update(['chk_flg' => true]);
     }
 
 }

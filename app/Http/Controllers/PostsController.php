@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\BaseController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use App\Http\Requests\PostRequest;
@@ -14,7 +15,7 @@ use Session;
 use Auth;
 use DB;
 
-class PostsController extends Controller
+class PostsController extends BaseController
 {
     private $post_model;
     private $image_model;
@@ -33,7 +34,7 @@ class PostsController extends Controller
         $this->tag_model = $tag_model;
     }
 
-    /** 既存のpostsデータ件取得する
+    /** 既存のpostsデータを取得する
     *
     * @access public
     * @param  String[] $request
@@ -43,17 +44,17 @@ class PostsController extends Controller
     {
         // Loginユーザではない場合、ユーザ名以外のデータをviewに渡す
         if (is_null($request->user())){
-            return view ('posts.index')->with([
-                'posts' => $this->post_model->getAllAuthedPost(),
-                'pager_link' => $this->post_model->getAllAuthedPost()->links(),
+            return $this->render([
+                'posts' => $posts = $this->post_model->getAllAuthedPost(),
+                'pager_link' => $posts->links(),
                 'tags' => $this->tag_model->getAllTag()
             ]);
         }
         // Loginユーザの場合、ユーザ名情報も含めたデータをviewに渡す
-        return view ('posts.index')->with([
-            'posts' => $this->post_model->getAllAuthedPost(),
+        return $this->render([
             'user' =>$request->user()->name,
-            'pager_link' => $this->post_model->getAllAuthedPost()->links(),
+            'posts' => $posts = $this->post_model->getAllAuthedPost(),
+            'pager_link' => $posts->links(),
             'tags' => $this->tag_model->getAllTag()
         ]);
     }
@@ -69,67 +70,89 @@ class PostsController extends Controller
         // File以外の入力情報をセッションに保存する
         $request->session()->regenerate();
         Session::put('entry', $request->except('featured_image'));
-
-        // Requestにタグ情報の入力がある場合、以下の処理をする
+        // Requestにタグ情報が含まれている場合、それぞれのタグ名を取得する
         if ($request->has('tags')) {
-            $tags = $request->tags;
-            $tagRecords = array();
-            foreach ($tags as $tagId) {
-                array_push($tagRecords, $this->tag_model->getTagName($tagId)->name);
-            }
+            $tagRecords = $this->confirmTag($request);
         }
-
-        // RequestにFile uploadが含まれている場合、以下の処理をする
+        // RequestにFile uploadが含まれている場合、画像をpublic/tempディレクトリに保存する
         if ($request->hasFile('featured_image')) {
-            $images = $request->file('featured_image');
-            // 各Fileに対し以下の処理をする
-            $imageArray = array();
-            foreach ($images as $file) {
-                // File名を取得
-                $fileName = $file->getClientOriginalName();
-                // Session IDの取得
-                $sessionId = Session::getId();
-                // Session IDの名前で保存先ディレクトリを作成
-                $path = storage_path('app/public/temp/'.$sessionId);
-                if(file_exists($path)){
-                } else {
-                mkdir($path, '0777');
-                }
-                // Fileの保存先を$loacationに格納
-                $location = ($path.'/'. $fileName);
-                // Viewに渡すFileパスを$filePathに格納
-                $filePath = ($sessionId.'/'. $fileName);
-                // Fileをリサイズして$locationに保存
-                Image::make($file)->resize(200, 100)->save($location);
-                array_push($imageArray, $filePath);
-                // 2時間後にfileとSeddion Id名のディレクトリを削除する
-                $expire = strtotime("2 hours ago");
-                if(filemtime($location)<$expire) {
-                    unlink($location);
-                    rmdir($path);
-                }
-            }
+             $imageArray = $this->confirmImage($request);
         }
                     if ($request->has('tags') and $request->hasFile('featured_image')) {
-                        return view('posts/confirm')->with([
+                        return $this->render([
                         'input' => $request->all(),
                         'images' => $imageArray,
                         'tags' => $tagRecords,
                         ]);
                     } elseif ($request->has('tags')) {
-                        return view('posts/confirm')->with([
+                        return $this->render([
                         'input' => $request->all(),
                         'tags' => $tagRecords,
                         ]);
                     } elseif ($request->hasFile('featured_image')) {
-                        return view('posts/confirm')->with([
+                        return $this->render([
                         'input' => $request->all(),
                         'images' => $imageArray,
                         ]);
                     }
-                        return view('posts/confirm')->with([
+                        return $this->render([
                         'input' => $request->all(),
                         ]);
+    }
+
+    /** Requestにタグ情報が含まれている場合、それぞれのタグ名を取得する
+    *
+    * @access private
+    * @param  String[] $request
+    * @return void
+    */
+    private function confirmTag($request)
+    {
+        $tags = $request->tags;
+        $tagRecords = array();
+        foreach ($tags as $tagId) {
+            array_push($tagRecords, $this->tag_model->getTagName($tagId)->name);
+        }
+        return $tagRecords;
+    }
+
+    /** 入力画面からのRequestにFile uploadが含まれている場合、画像をpublic/tempディレクトリに保存する
+    *
+    * @access private
+    * @param  String[] $request
+    * @return void
+    */
+    private function confirmImage($request)
+    {
+        $images = $request->file('featured_image');
+        // 各Fileに対し以下の処理をする
+        $imageArray = array();
+        foreach ($images as $file) {
+            // File名を取得
+            $fileName = $file->getClientOriginalName();
+            // Session IDの取得
+            $sessionId = Session::getId();
+            // Session IDの名前で保存先ディレクトリを作成
+            $path = storage_path('app/public/temp/'.$sessionId);
+            if(file_exists($path)){
+            } else {
+                mkdir($path, '0777');
+            }
+            // Fileの保存先を$loacationに格納
+            $location = ($path.'/'. $fileName);
+            // Viewに渡すFileパスを$filePathに格納
+            $filePath = ($sessionId.'/'. $fileName);
+            // Fileをリサイズして$locationに保存
+            Image::make($file)->resize(200, 100)->save($location);
+            array_push($imageArray, $filePath);
+            // 2時間後にfileとSeddion Id名のディレクトリを削除する
+            $expire = strtotime("2 hours ago");
+            if(filemtime($location)<$expire) {
+                unlink($location);
+                rmdir($path);
+            }
+        }
+        return $imageArray;
     }
 
     /** postデータの新規保存
@@ -142,45 +165,14 @@ class PostsController extends Controller
     {
         // 保存しておいたセッション情報を取得する
         $input = Session::get('entry');
-        /* 確認画面で戻るボタンが押された場合 */
-        if ($request->get('action') === 'Back') {
-            //入力画面へ戻る
-            return redirect('/')
-                ->withInput($input);
-        }
         try {
             DB::transaction(function () use ($input) {
                 /* postデータを保存する */
                 $post = $this->post_model->createPost($input);
                 /* Requestにtagの入力があった場合、中間テーブルtag_postにレコードを挿入する */
-                 if(isset($input['tags'])) {
-                    $tag = $input['tags'];
-                    $this->post_model->createTagPost($post, $tag);
-                 }
-
-                /* RequestにFile uploadが含まれていた場合、以下の処理をする */
-                $sessionId = Session::getId();
-                // post時に作成した、temp下のSession ID名ディレクトリのパスを取得する
-                $tempPath = storage_path('app/public/temp/'.$sessionId);
-                // temo下にSession Id名のディレクトリが存在すれば、以下の処理をする
-                if(file_exists($tempPath)) {
-                    // prod下にSession ID名でディレクトリを作成
-                    mkdir(storage_path('app/public/prod/'.$sessionId), '0777');
-                    // temp下のSession ID名ディレクトリのハンドルがオープンである場合、以下の処理をする
-                    if ($handle = opendir($tempPath)) {
-                        // ディレクトリハンドルからエントリを順番に読み込む
-                        while (false !== ($file = readdir($handle))) {
-                            // file名が"."、又は".."でなければ、ファイルごとに以下の処理をする
-                            if ($file != "." && $file != "..") {
-                                // temp下Session IDディレクトリ内のfileをprod下のSession IDディレクトリに移動する
-                                rename("$tempPath/$file", "$tempPath/../../prod/$sessionId/$file");
-                                // imagesテーブルにレコードを保存
-                                $image = array('post_id' => $post->id, 'image' => $file, 'session_id' => $sessionId);
-                                $this->image_model->createImage($image);
-                            }
-                        }
-                    }
-                }
+                $this->insertTagPost($input, $post);
+                /* RequestにFile uploadが含まれていた場合、画像をpublicディレクトリに保存し画像名をimagesテーブルに保存する */
+                $this->saveImage($post);
             });
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
@@ -188,6 +180,67 @@ class PostsController extends Controller
         return view('posts/completed');
     }
 
+    /** 投稿確認画面で戻るボタンが押された場合、入力内容を保持して入力画面に戻る
+    *
+    * @access public
+    * @param  Srring[] $input
+    * @return response
+    */
+    public function returnToIndex(Request $request)
+    {
+        $input = Session::get('entry');
+        if ($request->get('action') === 'Return') {
+            return redirect('/')
+                ->withInput($input);
+        }
+    }
+
+    /** 投稿確認画面でconfirmされたRequest内容にtagの入力があった場合、中間テーブルtag_postにレコードを挿入する
+    *
+    * @access private
+    * @param  String[] $input
+    * @param  String[] $post
+    * @return void
+    */
+    private function insertTagPost($input, $post)
+    {
+        if (isset($input['tags'])) {
+            $tag = $input['tags'];
+            $this->post_model->createTagPost($post, $tag);
+        }
+    }
+
+    /** 投稿確認画面でconfirmされたRequest内容にFile uploadが含まれていた場合、画像をpublic/prodディレクトリに保存し画像名をimagesテーブルに保存する
+    *
+    * @access private
+    * @param
+    * @return void
+    */
+    private function saveImage($post)
+    {
+        $sessionId = Session::getId();
+        // post時に作成した、temp下のSession ID名ディレクトリのパスを取得する
+        $tempPath = storage_path('app/public/temp/'.$sessionId);
+        // temo下にSession Id名のディレクトリが存在すれば、以下の処理をする
+        if(file_exists($tempPath)) {
+            // prod下にSession ID名でディレクトリを作成
+            mkdir(storage_path('app/public/prod/'.$sessionId), '0777');
+            // temp下のSession ID名ディレクトリのハンドルがオープンである場合、以下の処理をする
+            if ($handle = opendir($tempPath)) {
+                // ディレクトリハンドルからエントリを順番に読み込む
+                while (false !== ($file = readdir($handle))) {
+                    // file名が"."、又は".."でなければ、ファイルごとに以下の処理をする
+                    if ($file != "." && $file != "..") {
+                        // temp下Session IDディレクトリ内のfileをprod下のSession IDディレクトリに移動する
+                        rename("$tempPath/$file", "$tempPath/../../prod/$sessionId/$file");
+                        // imagesテーブルにレコードを保存
+                        $image = array('post_id' => $post->id, 'image' => $file, 'session_id' => $sessionId);
+                        $this->image_model->createImage($image);
+                    }
+                }
+            }
+        }
+    }
 
     /** 該当するpostデータの削除
     *
@@ -223,48 +276,11 @@ class PostsController extends Controller
     */
     public function edit(int $id)
     {
-        return view('posts.edit')->with([
+        return $this->render([
             'post' => $this->post_model->getPostFromId($id),
             'images' => $this->image_model->getImageOfPostId($id),
             'tags' => $this->tag_model->getAllTag()
         ]);
-    }
-
-    /** 該当するpostデータの更新
-    *
-    * @access public
-    * @param  String[] $request
-    * @return response
-    */
-    public function update(PostRequest $request)
-    {
-        try {
-            DB::transaction(function () use ($request) {
-                /* RequestにFile uploadが含まれている場合、以下の処理をする */
-                if ($request->hasFile('featured_image')) {
-                    $images = $request->file('featured_image');
-                    //各Fileに対し以下の処理をする
-                    foreach ($images as $file) {
-                        // File名を取得
-                        $fileName = $file->getClientOriginalName();
-                        // Fileの保存先を$loacationに格納
-                        $location = public_path('images/'. $fileName);
-                        // Fileをリサイズして$locationに保存
-                        Image::make($file)->resize(400, 200)->save($location);
-                        $image = array('post_id' => $request->id, 'image' => $fileName);
-                        // imagesテーブルにFile名を保存する
-                        $this->image_model->createImage($image);
-                    }
-                }
-
-                /* $requestからパラメータの配列のみ取得し$inputに格納 */
-                $input = $request->all();
-                $this->post_model->updatePost($input);
-            });
-        } catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
-        }
-        return redirect('/');
     }
 
     /** 該当するpostデータの表示
@@ -275,7 +291,7 @@ class PostsController extends Controller
     */
     public function show(int $id)
     {
-        return view('posts.show')->with([
+        return $this->render([
             'post' => $this->post_model->showPost($id),
             'images' => $this->image_model->getImageOfPostId($id),
             'tags' => $this->tag_model->getAllTag()
@@ -300,7 +316,7 @@ class PostsController extends Controller
         }else {
             $posts = $this->post_model->getAllPost();
         }
-        return view('posts.index')->with([
+        return $this->render([
             'posts' => $posts,
             'pager_link' => $posts->links(),
             'keyword' => $keyword,
@@ -334,10 +350,10 @@ class PostsController extends Controller
             return view ('posts.error_exception');
         }
         // Loginユーザの場合、postsテーブルにあるレコードのうち、カラムchk_flgがFalseのものを表示する
-        return view ('posts.index_auth')->with([
-            'user' =>$request->user()->name,
-            'posts' => $this->post_model->getAllPostToBeAuth(),
-            'pager_link' => $this->post_model->getAllPostToBeAuth()->links(),
+        return $this->render([
+            'user' => $request->user()->name,
+            'posts' => $posts = $this->post_model->getAllPostNeedAuth(),
+            'pager_link' => $posts->links(),
             'tags' => $this->tag_model->getAllTag()
         ]);
     }
@@ -362,11 +378,11 @@ class PostsController extends Controller
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
-        // postsテーブルにあるレコードのうち、カラムchk_flgがFalseのものを表示する
-        return view ('posts.index_auth')->with([
-            'user' =>$request->user()->name,
-            'posts' => $this->post_model->getAllPostToBeAuth(),
-            'pager_link' => $this->post_model->getAllPostToBeAuth()->links(),
+        // postsテーブルにあるレコードのうち、カラムchk_flgがfalseのものを表示する
+        return view ('posts.admin_index')->with([
+            'user' => $request->user()->name,
+            'posts' => $posts = $this->post_model->getAllPostNeedAuth(),
+            'pager_link' => $posts->links(),
             'tags' => $this->tag_model->getAllTag()
         ]);
     }
