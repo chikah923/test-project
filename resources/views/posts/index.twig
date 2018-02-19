@@ -32,6 +32,10 @@
     {% for tag in tags %}
       <input type="checkbox" name="tags[]" value="{{ tag.id }}">{{ tag.name }}
     {% endfor %}
+    <br>
+    {% if errors.first('tags') %}
+      <span class="error">{{ errors.first('tags') }}</span>
+    {% endif %}
   </p>
 
 
@@ -64,9 +68,12 @@ Sort by:
   {% for post in posts %}
   <li>
     {{ post.name }} [{{ post.created_at }}]
-    <a class="del" href="/posts/del/{{ post.id }}">[x]</a>
     <a class="edit" href="/posts/{{ post.id }}">[edit]</a>
     <a class="edit" href="/posts/show/{{ post.id }}">※</a>
+    <a href = "#" class="del" data-id = "{{ post.id }}">[x]</a>
+      <form action = "/posts/del/{{ post.id }}" method = "post" id = "form_{{ post.id }}">
+        {{ csrf_field() }}
+      </form>
   </li>
     {% for tag in post.tags %}
       <div class="tag">

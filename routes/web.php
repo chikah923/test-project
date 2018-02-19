@@ -22,7 +22,7 @@ Route::group(['prefix' => '/posts'], function($router) {
     $router->post('/', 'PostsController@post');
     $router->get('/complete', 'PostsController@store');
     $router->get('/return', 'PostsController@returnToIndex');
-    $router->get('/del/{id}', 'PostsController@destroy');
+    $router->post('/del/{id}', 'PostsController@destroy');
     $router->get('/search', 'PostsController@search');
     $router->get('/sort/comments', 'CommentsController@sortByComment');
     $router->get('/sort/lastupdated', 'PostsController@sortByLastUpdated');

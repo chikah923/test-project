@@ -20,3 +20,16 @@ Vue.component('example-component', require('./components/ExampleComponent.vue'))
 const app = new Vue({
     el: '#app'
 });
+
+
+var cmds = document.getElementsByClassName('del');
+
+for (var i = 0; i < cmds.length; i++) {
+    cmds[i].addEventListener('click', function(e) {
+        e.preventDefault();
+        if (confirm('Are you sure of deleting this post?')) {
+            document.getElementById('form_' + this.dataset.id).submit();
+        }
+    });
+}
+
