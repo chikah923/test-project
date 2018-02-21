@@ -12,17 +12,19 @@
 </div>
 
 <div class="col-sm-8" style="text-align:left;">
-<form action = "/posts"  method ="post" enctype= "multipart/form-data">
+<form action = "/posts"  method ="post" id = "postForm" enctype= "multipart/form-data">
   {{ csrf_field() }}
   <p>
-    <input type="text" name="name" placeholder="Your name" value= "{{ old('name') }}">
+    <input type="text" name="name" placeholder="Your name" value= "{{ old('name') }}" class = "group1" id = "tx1" required/>
+    <small id = "error"></small>
     {% if errors.first('name') %}
       <span class="error">{{ errors.first('name') }}</span>
     {% endif %}
   </p>
 
   <p>
-    <textarea name="body" placeholder="Enter comments">{{ old('body') }}</textarea>
+    <textarea name="body" placeholder="Enter comments" id = "tx2" class = "group1" required/>{{ old('body') }}</textarea>
+    <small id = "errorBody"></small>
     {% if errors.first('body') %}
       <span class="error">{{ errors.first('body') }}</span>
     {% endif %}
@@ -45,7 +47,7 @@
   </p>
 
   <p>
-    <input type="submit" value="Post Comment">
+    <input type="submit" value="Post Comment" id ="submitPost" onclick = "return validatePost();" disabled>
   </p>
 </form>
 </div>
@@ -91,6 +93,10 @@ Sort by:
     {{ pager_link|raw }}
   </ul>
 </nav>
+
+<script>
+
+</script>
 
 {% endblock %}
 

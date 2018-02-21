@@ -989,20 +989,33 @@ window.Vue = __webpack_require__(35);
 
 Vue.component('example-component', __webpack_require__(38));
 
-var app = new Vue({
+const app = new Vue({
     el: '#app'
 });
 
-var cmds = document.getElementsByClassName('del');
-
-for (var i = 0; i < cmds.length; i++) {
-    cmds[i].addEventListener('click', function (e) {
-        e.preventDefault();
-        if (confirm('Are you sure of deleting this post?')) {
-            document.getElementById('form_' + this.dataset.id).submit();
+$(() => {
+    $('#tx1').blur((e) => {
+        const input = e.currentTarget;
+        if (input.value=='') {
+            $(e.currentTarget).css('background-color', 'red');
+        } else {
+        $(e.currentTarget).css('background-color', 'white');
         }
+        return;
     });
-}
+    $('#tx2').change((e) => {
+        const $text_input = $('#tx2').val();
+        alert($text_input);
+        if ($text_input != '') {
+            $('#submitPost').prop('disabled', false);
+        } else {
+            $('#submitPost').prop('disabled', true);
+        }
+        return;
+    });
+});
+
+
 
 /***/ }),
 /* 11 */
