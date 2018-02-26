@@ -20,15 +20,15 @@ Route::group(['prefix' => '/admin/index'], function($router) {
 
 Route::group(['prefix' => '/posts'], function($router) {
     $router->post('/', 'PostsController@post');
-    $router->get('/complete', 'PostsController@store');
+    $router->get('/complete', 'PostsController@savePost');
     $router->get('/return', 'PostsController@returnToIndex');
-    $router->post('/del/{id}', 'PostsController@destroy');
+    $router->post('/del/{id}', 'PostsController@destroyPost');
     $router->get('/search', 'PostsController@search');
     $router->get('/sort/comments', 'CommentsController@sortByComment');
     $router->get('/sort/lastupdated', 'PostsController@sortByLastUpdated');
     $router->get('/{id}', 'PostsController@edit');
     $router->post('/update/{id}', 'PostsController@update');
-    $router->get('/del/image/{image_id}', 'ImagesController@destroy');
+    $router->get('/del/image/{image_id}', 'ImagesController@destroyImage');
     $router->get('/show/{id}', 'PostsController@show');
     $router->post('/{id}/comments', 'CommentsController@store');
     $router->get('/comments/{comment_id}', 'CommentsController@destroy');

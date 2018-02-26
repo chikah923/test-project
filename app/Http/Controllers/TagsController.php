@@ -9,13 +9,14 @@ class TagsController extends Controller
 {
     private $comment_model;
 
-    /** tagモデルをインスタンス化する
-    *
-    * @access public
-    * @param  obj $tag_model
-    * @return void
-    */
-     public function __construct(TagModel $tag_model)
+    /**
+     * TagModelのインスタンスを作成する
+     *
+     * @access public
+     * @param obj $tag_model
+     * @return void
+     */
+    public function __construct(TagModel $tag_model)
     {
         $this->tag_model = $tag_model;
     }
