@@ -168,3 +168,4 @@ class Post extends Model
     }
 
 }
+

@@ -211,6 +211,7 @@ class PostsController extends BaseController
      * @param int $id
      * @return response View //show画面を返す
      */
+
     public function show(int $id)
     {
         return $this->render([
