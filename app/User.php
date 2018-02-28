@@ -27,7 +27,8 @@ class User extends Authenticatable
         'password', 'remember_token',
     ];
 
-    /** verify_usersテーブルとの紐付きを設定
+    /**
+    * verify_usersテーブルとの紐付きを設定
     *
     * @access public
     * @return void
@@ -37,6 +38,3 @@ class User extends Authenticatable
             return $this->hasOne('App\VerifyUser');
         }
 }
-
-
-

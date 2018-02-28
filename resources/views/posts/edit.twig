@@ -24,17 +24,11 @@
     {% for image in images %}
       {% if post.id == image.post_id %}
         <img src="{{ base_path ~ directory }}/storage/prod/{{ image.session_id }}/{{ image.image }}" width="400" height="200">
-        <a class="del" href="/posts/del/image/{{ image.id }}">[x]</a>
+        <a href="/posts/del/image/{{ image.id }}">[x]</a>
         <br><br>
        {% endif %}
     {% endfor %}
   </p>
-
-  <p>
-    <label>Upload new image: </label>
-    <input type="file" name ="featured_image[]" id="featured_image">
-  </p>
-
     <input type="submit" value="Update">
 </form>
 

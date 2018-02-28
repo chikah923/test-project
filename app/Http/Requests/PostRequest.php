@@ -24,15 +24,21 @@ class PostRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required',
-            'body' => 'required|min:3'
+            //'name' => 'required|string|regex:/^[!-~]+$/|min:3|max:15',
+            'body' => 'required|string|regex:/^[a-zA-Z0-9\s]+/|min:3|max:30',
+            'tags' => 'required|exists:tags,id'
         ];
     }
 
-    public function messages(){
+    public function messages()
+    {
         return [
-            'name.required' => 'you forgot to input your name!'
-            ];
+            //'name.required' => 'You forgot to input your name!',
+            'name.regex' => 'Plese use half-width alphanumeric letters.',
+            'body.required' => 'You cannot make a post without a comment.',
+            'body.regex' => 'Please use alphanumeric letters',
+            'tags.exists' => 'The tag you selected does not exist in the database'
+        ];
     }
 
 }

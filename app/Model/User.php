@@ -27,7 +27,8 @@ class User extends Authenticatable
         'password', 'remember_token',
     ];
 
-    /** verify_usersテーブルとの紐付きを設定
+    /**
+     * verify_usersテーブルとの紐付きを設定
      *
      * @access public
      * @return void
@@ -37,5 +38,33 @@ class User extends Authenticatable
         return $this->hasOne('App\Model\VerifyUser');
     }
 
+    /**
+     * userの新規保存
+     *
+     * @access public
+     * @param string[] $data
+     * @return void
+     */
+    public function createUser(array $data)
+    {
+       return $this->create([
+           'name' => $data['name'],
+           'email' => $data['email'],
+           'password' => bcrypt($data['password']),
+       ]);
+    }
+
+    /**
+     * 該当userのカラム"veried"を更新して認証済みuserとする
+     *
+     * @access public
+     * @param int $id
+     * @return void
+     */
+    public function updateVerification(int $id)
+    {
+        return $this->where('id', $id)
+                    ->update(['verified' => true]);
+    }
 }
 

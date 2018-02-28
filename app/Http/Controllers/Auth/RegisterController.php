@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Model\User;
-use App\Model\VerifyUser;
+use App\Model\User as UserModel;
+use App\Model\VerifyUser as VerifyUser;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Auth\RegistersUsers;
-use Mail;
 use App\Mail\VerifyMail;
+use Mail;
+use DB;
 
 class RegisterController extends Controller
 {
@@ -37,9 +38,11 @@ class RegisterController extends Controller
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(UserModel $user_model, VerifyUser $verify_user_model)
     {
         $this->middleware('guest');
+        $this->user_model = $user_model;
+        $this->verify_user_model = $verify_user_model;
     }
 
     /**
@@ -65,48 +68,54 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-        $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => bcrypt($data['password']),
-        ]);
-
-        $verifyUser = VerifyUser::create([
-            'user_id' => $user->id,
-            'token' => str_random(40)
-        ]);
-
-        Mail::to($user->email)->send(new VerifyMail($user));
-
-        return $user;
+        try {
+            DB::transaction(function () use ($data) {
+                // usersテーブルにユーザを新規保存
+                $user = $this->user_model->createUser($data);
+                // verify_usersテーブルにユーザを新規保存
+                $this->verify_user_model->createVerifyUser($user);
+                // ユーザのemail宛に確認メールを送信する
+                Mail::to($user->email)->send(new VerifyMail($user));
+                return $user;
+            });
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
     }
 
-     /** 送信メールのリンク"Verify Email"が押下された際以下の処理を行う
+     /**
+     * 送信メールのリンク"Verify Email"が押下された際以下の処理を行う
      *
      * @access public
-     * @param  String $token
-     * @return response
+     * @param string $token
+     * @return response //ログイン画面にリダイレクトする
      */
-    public function verifyUser($token)
+    public function verifyUser(string $token)
     {
-        // verify_usersテーブル中のカラム"token"から、リクエストで受け取ったtokenと等しいもののうち最初のものを取得
-        $verifyUser = VerifyUser::where('token', $token)->first();
+        // verify_usersテーブル中のカラム"token"から、リクエストで受け取ったtokenと等しいtokenを持つレコードを取得
+        $verifyUser = $this->verify_user_model->getVerifyUserWithToken($token);
         // $verifyUserがnullでない場合、以下の処理を行う
-        if(isset($verifyUser)){
+        if (isset($verifyUser)){
             // $verifyUserに該当するユーザがusersテーブル上でカラム"verified"に値"0"を持つ場合
             $user = $verifyUser->user;
-            if(!$user->verified) {
-                // カラム"verified"の値を"1"に更新して保存し、以下のステータスメッセージを定義する
-                $verifyUser->user->verified = 1;
-                $verifyUser->user->save();
-                $status = "Your e-mail is verified. You can now login.";
+            if (!$user->verified) {
+                try {
+                    DB::transaction(function () use ($user) {
+                        // カラム"verified"の値を"1"に更新して保存し、以下のステータスメッセージを定義する
+                        $id = $user->id;
+                        $this->user_model->updateVerification($id);
+                    });
+                } catch (\Exception $e) {
+                    throw new \Exception($e->getMessage());
+                }
+                        $status = "Your e-mail is verified. You can now login.";
             } else {
                 // $verifyUserがnullでなく、カラム"verified"が既に"1"となっている場合、以下のステータスメッセージを定義する
                 $status = "Your e-mail is already verified. You can now login.";
             }
         } else {
-                // $verifyUserがnullの場合、以下の警告メッセージを定義する
-                return redirect('/login')->with('warning', "Sorry your email cannot be identified.");
+            // $verifyUserがnullの場合、以下の警告メッセージを定義する
+            return redirect('/login')->with('warning', "Sorry your email cannot be identified.");
         }
         return redirect('/login')->with('status', $status);
     }

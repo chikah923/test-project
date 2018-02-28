@@ -51,3 +51,18 @@ ul {
   float:right;
 }
 
+small {
+  color: #FF00FF;
+}
+
+input[type="submit"] {
+    border:1px solid #DCDCDC;
+    border-radius:5px;
+    padding:7px;
+}
+
+
+input[type="submit"][disabled] {
+    background:#DCDCDC;
+    cursor:not-allowed;
+}
