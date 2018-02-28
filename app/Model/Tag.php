@@ -10,33 +10,36 @@ class Tag extends Model
     protected $fillable = ['name'];
 
 
-    /** tagsテーブルとpostsテーブルの紐付きを設定
-    *
-    * @access public
-    * @return void
-    */
+    /**
+     * tagsテーブルとpostsテーブルの紐付きを設定
+     *
+     * @access public
+     * @return void
+     */
     public function posts()
     {
         return $this->belongsToMany('App\Model\Post');
     }
 
-    /** レコードを全件取得
-    *
-    * @access public
-    * @return void
-    */
+    /**
+     * レコードを全件取得
+     *
+     * @access public
+     * @return void
+     */
     public function getAllTag()
     {
         return $this->all();
     }
 
-    /** tagの名前を取得
-    *
-    * @access public
-    * @param  String[] $tag
-    * @return void
-    */
-    public function getTagName($tagId)
+    /**
+     * tagの名前を取得
+     *
+     * @access public
+     * @param  string $tagId
+     * @return void
+     */
+    public function getTagName(string $tagId)
     {
         return $this->findOrFail($tagId);
     }

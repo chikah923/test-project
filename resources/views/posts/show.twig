@@ -30,7 +30,7 @@
   {% for comment in post.comments %}
   <li>
     {{ comment.body }}
-    <a href="/posts/comments/{{ comment.id }}" class="del">[x]</a>
+    <a href="/posts/comments/{{ comment.id }}">[x]</a>
   </li>
   <hr>
   {% endfor %}

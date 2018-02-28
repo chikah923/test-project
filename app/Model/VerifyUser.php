@@ -8,7 +8,8 @@ class VerifyUser extends Model
 {
     protected $guarded = [];
 
-    /** usersテーブルとの紐付きを設定
+    /**
+     * usersテーブルとの紐付きを設定
      *
      * @access public
      * @return void
@@ -18,13 +19,14 @@ class VerifyUser extends Model
         return $this->belongsTo('App\Model\User', 'user_id');
     }
 
-    /** userの新規保存
+    /**
+     * userの新規保存
      *
      * @access public
-     * @param  String[] $user
+     * @param obj $user
      * @return void
      */
-    public function createVerifyUser($user)
+    public function createVerifyUser(object $user)
     {
         return $this->create([
             'user_id' => $user->id,
@@ -32,13 +34,14 @@ class VerifyUser extends Model
         ]);
     }
 
-    /** userからのリクエストで受け取ったtokenと等しいtokenを持つレコードを取得
+    /**
+     * userからのリクエストで受け取ったtokenと等しいtokenを持つレコードを取得
      *
      * @access public
-     * @param  string $token
+     * @param string $token
      * @return void
      */
-    public function getVerifyUserWithToken($token)
+    public function getVerifyUserWithToken(string $token)
     {
         return $this->where('token', $token)->first();
     }

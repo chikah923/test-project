@@ -68,22 +68,29 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-        // usersテーブルにユーザを新規保存
-        $user = $this->user_model->createUser($data);
-        // verify_usersテーブルにユーザを新規保存
-        $this->verify_user_model->createVerifyUser($user);
-        // ユーザのemail宛に確認メールを送信する
-        Mail::to($user->email)->send(new VerifyMail($user));
-        return $user;
+        try {
+            DB::transaction(function () use ($data) {
+                // usersテーブルにユーザを新規保存
+                $user = $this->user_model->createUser($data);
+                // verify_usersテーブルにユーザを新規保存
+                $this->verify_user_model->createVerifyUser($user);
+                // ユーザのemail宛に確認メールを送信する
+                Mail::to($user->email)->send(new VerifyMail($user));
+                return $user;
+            });
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
     }
 
-     /** 送信メールのリンク"Verify Email"が押下された際以下の処理を行う
+     /**
+     * 送信メールのリンク"Verify Email"が押下された際以下の処理を行う
      *
      * @access public
-     * @param  String $token
-     * @return response
+     * @param string $token
+     * @return response //ログイン画面にリダイレクトする
      */
-    public function verifyUser($token)
+    public function verifyUser(string $token)
     {
         // verify_usersテーブル中のカラム"token"から、リクエストで受け取ったtokenと等しいtokenを持つレコードを取得
         $verifyUser = $this->verify_user_model->getVerifyUserWithToken($token);
