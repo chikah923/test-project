@@ -66,6 +66,5 @@ class User extends Authenticatable
         return $this->where('id', $id)
                     ->update(['verified' => true]);
     }
-
 }
 

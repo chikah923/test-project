@@ -29,3 +29,4 @@ class CommentRequest extends FormRequest
     }
 
 }
+

@@ -144,6 +144,3 @@ class ImagesController extends Controller
             }
         }
     }
-
-}
-
